@@ -12,7 +12,8 @@ const DESCRIPTIONS: Record<string, string> = {
   questions_enem: "Banco de questões oficiais do ENEM.",
   questions_concursos: "Questões das provas de concurso importadas.",
   planner: "Grade semanal de estudos.",
-  registration: "Desligado, ninguém novo consegue criar conta (quem já tem continua entrando).",
+  registration:
+    "Cadastro pelos links de Convites. Desligado, nem os convites funcionam (quem já tem conta continua entrando).",
   email_reminders: "Lembretes dos blocos do cronograma por e-mail.",
 };
 
@@ -20,6 +21,7 @@ export function ModulesPanel() {
   const [features, setFeatures] = useState<Feature[] | null>(null);
   const [limits, setLimits] = useState<Limits | null>(null);
   const [perMonth, setPerMonth] = useState("");
+  const [teacherPerMonth, setTeacherPerMonth] = useState("");
   const [budget, setBudget] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState<string | null>(null);
@@ -31,6 +33,7 @@ export function ModulesPanel() {
       if (!data) return;
       setLimits(data);
       setPerMonth(data.essays_per_month ? String(data.essays_per_month) : "");
+      setTeacherPerMonth(data.teacher_essays_per_month ? String(data.teacher_essays_per_month) : "");
       setBudget(data.ai_budget_usd ? String(data.ai_budget_usd) : "");
     });
   }, []);
@@ -50,6 +53,7 @@ export function ModulesPanel() {
     setSaved(null);
     const body = {
       essays_per_month: perMonth ? Number(perMonth) : null,
+      teacher_essays_per_month: teacherPerMonth ? Number(teacherPerMonth) : null,
       ai_budget_usd: budget ? Number(budget.replace(",", ".")) : null,
     };
     const { data, error: err } = await api.PUT("/api/v1/admin/settings/limits", { body });
@@ -105,6 +109,16 @@ export function ModulesPanel() {
                 value={perMonth}
                 onChange={(e) => setPerMonth(e.target.value)}
                 hint="Ao atingir, o aluno vê uma mensagem até o mês virar."
+              />
+              <TextField
+                label="Redações por professor por mês"
+                type="number"
+                min={1}
+                max={10000}
+                inputMode="numeric"
+                value={teacherPerMonth}
+                onChange={(e) => setTeacherPerMonth(e.target.value)}
+                hint="O professor corrige as redações das turmas. Em branco: sem limite."
               />
               <TextField
                 label="Orçamento mensal de IA (US$)"

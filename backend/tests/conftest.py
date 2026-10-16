@@ -81,6 +81,14 @@ async def db(session_factory) -> AsyncIterator[AsyncSession]:
 
 @pytest.fixture
 async def client(db: AsyncSession) -> AsyncIterator[AsyncClient]:
+    from app.core.enums import UserRole
+    from app.modules.invites.models import Invite
+    from tests.helpers import INVITE_CODE
+
+    # o cadastro só funciona com convite: os testes usam este (aluno, sem limite)
+    db.add(Invite(code=INVITE_CODE, role=UserRole.student))
+    await db.commit()
+
     async def _override_session():
         yield db
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { FileDown } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
@@ -111,7 +112,22 @@ export function EssayDetail() {
         </div>
       ) : null}
 
-      {essay.status === "graded" && essay.result ? <EssayResultView result={essay.result} /> : null}
+      {essay.status === "graded" && essay.result ? (
+        <>
+          <div>
+            <a
+              href={`/imprimir/redacao/${essay.id}`}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-800 hover:bg-slate-50"
+            >
+              <FileDown aria-hidden className="h-4 w-4" />
+              Exportar devolutiva em PDF
+            </a>
+          </div>
+          <EssayResultView result={essay.result} />
+        </>
+      ) : null}
 
       {essay.status === "graded" && essay.transcription_text ? (
         <details className="rounded-lg border border-slate-200 bg-white p-4">

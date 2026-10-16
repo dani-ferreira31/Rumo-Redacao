@@ -7,6 +7,7 @@ from sqlalchemy.dialects.postgresql import ENUM
 
 class UserRole(StrEnum):
     student = "student"
+    teacher = "teacher"
     admin = "admin"
 
 

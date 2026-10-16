@@ -4,6 +4,12 @@ from app.ai.models import AICredential, AIUsage
 from app.core.db import Base
 from app.email.models import EmailLog
 from app.jobs.models import Job
+from app.modules.assessments.models import (
+    Assessment,
+    AssessmentAnswer,
+    AssessmentAttempt,
+    AssessmentQuestion,
+)
 from app.modules.auth.models import EmailToken, RefreshToken
 from app.modules.contests.models import ContestExam, ContestExamQuestion
 from app.modules.essays.models import (
@@ -13,6 +19,7 @@ from app.modules.essays.models import (
     EssayResult,
     EssayTheme,
 )
+from app.modules.invites.models import Invite
 from app.modules.planner.models import StudyBlock, StudyPlan, StudySession
 from app.modules.questions.models import (
     Exam,
@@ -37,6 +44,10 @@ __all__ = [
     "AICredential",
     "AIUsage",
     "AppSetting",
+    "Assessment",
+    "AssessmentAnswer",
+    "AssessmentAttempt",
+    "AssessmentQuestion",
     "ContestExam",
     "ContestExamQuestion",
     "EmailLog",
@@ -48,6 +59,7 @@ __all__ = [
     "EssayTheme",
     "Exam",
     "ExamQuestion",
+    "Invite",
     "Job",
     "KnowledgeArea",
     "PracticeSession",

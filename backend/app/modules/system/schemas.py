@@ -113,6 +113,7 @@ class FeaturesIn(BaseModel):
 
 class Limits(BaseModel):
     essays_per_month: int | None = Field(default=None, ge=1, le=1000)
+    teacher_essays_per_month: int | None = Field(default=None, ge=1, le=10000)
     ai_budget_usd: float | None = Field(default=None, gt=0, le=100000)
 
 

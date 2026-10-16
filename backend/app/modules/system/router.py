@@ -8,7 +8,7 @@ from app.core.db import get_session
 from app.core.deps import require_admin
 from app.core.enums import JobStatus
 from app.core.errors import AppError
-from app.modules.system import ai_admin, service
+from app.modules.system import ai_admin, quota, service
 from app.modules.system.models import SystemEvent
 from app.modules.system.schemas import (
     CostReport,
@@ -119,8 +119,14 @@ async def put_limits(
 ):
     await set_setting(session, "limits", data.model_dump(), user.id)
     per_month = data.essays_per_month or "sem limite"
+    teacher = data.teacher_essays_per_month or "sem limite"
     budget = f"US$ {data.ai_budget_usd:.2f}" if data.ai_budget_usd else "sem teto"
-    log_event(session, "limits", f"Limites: {per_month} redações/mês; orçamento de IA {budget}")
+    log_event(
+        session,
+        "limits",
+        f"Limites: {per_month} redações/mês por aluno, {teacher} por professor; "
+        f"orçamento de IA {budget}",
+    )
     await session.commit()
     return data
 
@@ -208,6 +214,22 @@ async def ai_set_prices(
 @admin.get("/ai/calibrations", response_model=list[ai_admin.Calibration])
 async def ai_calibrations():
     return ai_admin.calibrations()
+
+
+@admin.get("/ai/quotas", response_model=quota.QuotasOut)
+async def ai_quotas(session: AsyncSession = Depends(get_session)):
+    """Uso do plano gratuito por modelo (contado pelo app) contra os limites cadastrados."""
+    return await quota.report(session)
+
+
+@admin.put("/ai/quotas", response_model=quota.QuotasOut)
+async def ai_set_quotas(
+    data: quota.QuotasIn,
+    user: User = Depends(require_admin),
+    session: AsyncSession = Depends(get_session),
+):
+    await quota.set_rules(session, user, data)
+    return await quota.report(session)
 
 
 router.include_router(admin)

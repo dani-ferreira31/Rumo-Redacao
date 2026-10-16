@@ -2,12 +2,13 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
-import { useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 
 import { GuestOnly } from "@/components/guest-only";
-import { Alert, Button, Card, TextField } from "@/components/ui";
+import { Alert, Button, Card, Spinner, TextField } from "@/components/ui";
 import { api, errorCode, errorMessage, fieldErrors } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { ageFrom } from "@/lib/dates";
@@ -39,7 +40,51 @@ const schema = z
 type FormInput = z.input<typeof schema>;
 type FormData = z.output<typeof schema>;
 
+const ROLE_LABEL: Record<string, string> = { student: "aluno", teacher: "professor" };
+
+/** O cadastro só existe por convite: o link traz `?convite=<código>`. */
 export function RegisterForm() {
+  const code = useSearchParams().get("convite")?.trim() ?? "";
+  const [invite, setInvite] = useState<{ role: string } | "invalid" | null>(null);
+
+  useEffect(() => {
+    if (!code) return;
+    api
+      .GET("/api/v1/invites/{code}", { params: { path: { code } } })
+      .then(({ data }) => setInvite(data ?? "invalid"));
+  }, [code]);
+
+  if (!code || invite === "invalid") {
+    return (
+      <GuestOnly>
+        <Card>
+          <h1 className="mb-2 text-xl font-semibold">Cadastro por convite</h1>
+          {code ? (
+            <Alert>
+              Este convite não é válido: pode ter expirado, sido revogado ou atingido o limite de
+              usos. Peça um link novo a quem te convidou.
+            </Alert>
+          ) : (
+            <p className="text-sm text-slate-600">
+              O Rumo1000 é fechado: para criar uma conta você precisa do link de convite enviado
+              pela escola ou pelo professor. Abra o link que você recebeu.
+            </p>
+          )}
+          <p className="mt-4 text-center text-sm">
+            Já tem conta?{" "}
+            <Link href="/entrar" className="text-indigo-700 hover:underline">
+              Entrar
+            </Link>
+          </p>
+        </Card>
+      </GuestOnly>
+    );
+  }
+  if (!invite) return <Spinner label="Conferindo o convite..." />;
+  return <SignupForm code={code} role={invite.role} />;
+}
+
+function SignupForm({ code, role }: { code: string; role: string }) {
   const { startSession } = useAuth();
   const [error, setError] = useState<string | null>(null);
   const {
@@ -60,6 +105,7 @@ export function RegisterForm() {
     setError(null);
     const { data, error: apiError } = await api.POST("/api/v1/auth/register", {
       body: {
+        invite_code: code,
         name: values.name,
         email: values.email,
         password: values.password,
@@ -87,7 +133,9 @@ export function RegisterForm() {
     <GuestOnly>
       <Card>
         <h1 className="mb-1 text-xl font-semibold">Criar conta</h1>
-        <p className="mb-4 text-sm text-slate-600">Gratuito. Use tudo sem limites.</p>
+        <p className="mb-4 text-sm text-slate-600">
+          Você foi convidado como <strong>{ROLE_LABEL[role] ?? role}</strong>.
+        </p>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
           {error ? <Alert>{error}</Alert> : null}
           <TextField label="Nome" autoComplete="name" error={errors.name?.message} {...register("name")} />
@@ -142,7 +190,7 @@ export function RegisterForm() {
                   Política de Privacidade
                 </a>
                 . Entendo que o texto e as fotos das minhas redações são enviados a um provedor de
-                inteligência artificial (Anthropic) para transcrição e correção.
+                inteligência artificial para transcrição e correção.
               </span>
             </label>
             {errors.accept_terms ? (

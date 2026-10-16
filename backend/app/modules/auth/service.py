@@ -22,6 +22,7 @@ from app.core.security import (
 from app.email.service import queue_email
 from app.modules.auth.models import EmailToken, RefreshToken
 from app.modules.auth.schemas import RegisterIn
+from app.modules.invites.service import claim as claim_invite
 from app.modules.system.settings import feature_enabled
 from app.modules.users.models import User
 
@@ -46,6 +47,10 @@ class Session:
 
 def _invalid_credentials() -> AppError:
     return AppError("invalid_credentials", "E-mail ou senha incorretos.", 401)
+
+
+def account_disabled() -> AppError:
+    return AppError("account_disabled", "Esta conta foi desativada. Fale com o administrador.", 401)
 
 
 def _age_on(birth: date, today: date) -> int:
@@ -86,6 +91,8 @@ async def register(session: AsyncSession, data: RegisterIn, user_agent: str | No
             "Menores de 18 anos precisam do consentimento do responsável.",
             422,
         )
+    # o convite vem antes: sem um válido, não dá para descobrir quais e-mails já existem
+    invite = await claim_invite(session, data.invite_code)
     if await session.scalar(select(User.id).where(User.email == email)):
         raise AppError("email_already_registered", "Este e-mail já está cadastrado.", 409)
 
@@ -93,6 +100,8 @@ async def register(session: AsyncSession, data: RegisterIn, user_agent: str | No
         name=data.name,
         email=email,
         password_hash=hash_password(data.password),
+        role=invite.role,
+        invite_id=invite.id,
         birth_date=data.birth_date,
         guardian_consent_at=utcnow() if is_minor else None,
     )
@@ -116,6 +125,8 @@ async def login(
     valid, needs_rehash = verify_password(password, user.password_hash if user else None)
     if not valid or user is None:
         raise _invalid_credentials()
+    if user.disabled_at is not None:
+        raise account_disabled()
     if needs_rehash:
         user.password_hash = hash_password(password)
     result = await _start_session(session, user, user_agent)
@@ -161,6 +172,8 @@ async def refresh(session: AsyncSession, raw: str | None, user_agent: str | None
     user = await session.get(User, token.user_id)
     if user is None:
         raise _refresh_error()
+    if user.disabled_at is not None:
+        raise account_disabled()
 
     result = await _start_session(session, user, user_agent)
     if token.revoked_at is None:
@@ -251,7 +264,7 @@ async def verify_email(session: AsyncSession, raw: str) -> None:
 async def forgot_password(session: AsyncSession, email: str) -> None:
     """Não revela se o e-mail existe: quem chama sempre responde 204."""
     user = await session.scalar(select(User).where(User.email == normalize_email(email)))
-    if user is None:
+    if user is None or user.disabled_at is not None:
         return
     raw = await _issue_email_token(
         session, user, EmailTokenPurpose.reset_password, RESET_PASSWORD_TTL

@@ -5,10 +5,12 @@ import {
   CircleDollarSign,
   Landmark,
   LayoutDashboard,
+  Link2,
   ListChecks,
   PenLine,
   SlidersHorizontal,
   Sparkles,
+  Users,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -22,6 +24,13 @@ const GROUPS = [
       { href: "/admin/custos", label: "Custos", icon: CircleDollarSign },
       { href: "/admin/sistema", label: "Sistema", icon: Activity },
       { href: "/admin/modulos", label: "Módulos e limites", icon: SlidersHorizontal },
+    ],
+  },
+  {
+    label: "Acesso",
+    items: [
+      { href: "/admin/convites", label: "Convites", icon: Link2 },
+      { href: "/admin/usuarios", label: "Usuários", icon: Users },
     ],
   },
   {

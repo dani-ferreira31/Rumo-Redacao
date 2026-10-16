@@ -6,10 +6,13 @@ from sqlalchemy import select
 from app.jobs.models import Job
 
 PASSWORD = "senha-forte-123"
+# convite de aluno sem limite, criado pela fixture `client` (conftest)
+INVITE_CODE = "convite-de-teste"
 
 
 def register_payload(**overrides) -> dict:
     data = {
+        "invite_code": INVITE_CODE,
         "name": "Maria Souza",
         "email": "maria@example.com",
         "password": PASSWORD,

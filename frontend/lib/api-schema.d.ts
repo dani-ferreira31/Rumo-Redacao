@@ -166,6 +166,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/invites/{code}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Check Invite
+         * @description Público: a tela de cadastro confere o convite e mostra se é de aluno ou professor.
+         */
+        get: operations["check_invite_api_v1_invites__code__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/me": {
         parameters: {
             query?: never;
@@ -732,6 +752,84 @@ export interface paths {
         patch: operations["update_theme_api_v1_admin_essay_themes__theme_id__patch"];
         trace?: never;
     };
+    "/api/v1/admin/invites": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Invites */
+        get: operations["list_invites_api_v1_admin_invites_get"];
+        put?: never;
+        /**
+         * Create Invite
+         * @description Gera um link de cadastro de aluno ou professor.
+         */
+        post: operations["create_invite_api_v1_admin_invites_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/invites/{invite_id}/revoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Revoke Invite */
+        post: operations["revoke_invite_api_v1_admin_invites__invite_id__revoke_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/users": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Users
+         * @description Contas da plataforma (nome, e-mail, papel e situação). Sem redações nem respostas.
+         */
+        get: operations["list_users_api_v1_admin_users_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/users/{user_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Update User
+         * @description Troca o papel (aluno ou professor) ou desativa/reativa a conta.
+         */
+        patch: operations["update_user_api_v1_admin_users__user_id__patch"];
+        trace?: never;
+    };
     "/api/v1/contests/filters": {
         parameters: {
             query?: never;
@@ -894,6 +992,160 @@ export interface paths {
         put?: never;
         /** Create Subject */
         post: operations["create_subject_api_v1_admin_contests_subjects_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/teacher/assessments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Assessments */
+        get: operations["list_assessments_api_v1_teacher_assessments_get"];
+        put?: never;
+        /**
+         * Create Assessment
+         * @description Cria a prova fechada; o professor abre quando for aplicar.
+         */
+        post: operations["create_assessment_api_v1_teacher_assessments_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/teacher/assessments/{assessment_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Assessment
+         * @description Prova com gabarito (para conferir e imprimir).
+         */
+        get: operations["get_assessment_api_v1_teacher_assessments__assessment_id__get"];
+        put?: never;
+        post?: never;
+        /** Delete Assessment */
+        delete: operations["delete_assessment_api_v1_teacher_assessments__assessment_id__delete"];
+        options?: never;
+        head?: never;
+        /** Update Assessment */
+        patch: operations["update_assessment_api_v1_teacher_assessments__assessment_id__patch"];
+        trace?: never;
+    };
+    "/api/v1/teacher/assessments/{assessment_id}/results": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Assessment Results */
+        get: operations["assessment_results_api_v1_teacher_assessments__assessment_id__results_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/assessments/by-code/{code}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Assessment By Code */
+        get: operations["assessment_by_code_api_v1_assessments_by_code__code__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/assessments/by-code/{code}/start": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Start Assessment
+         * @description Começa ou retoma a prova (uma tentativa por aluno). Questões sem gabarito.
+         */
+        post: operations["start_assessment_api_v1_assessments_by_code__code__start_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/assessments/attempts/{attempt_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Attempt */
+        get: operations["get_attempt_api_v1_assessments_attempts__attempt_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/assessments/attempts/{attempt_id}/answers/{question_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Save Answer
+         * @description Grava (ou troca) a resposta. Não devolve se acertou.
+         */
+        put: operations["save_answer_api_v1_assessments_attempts__attempt_id__answers__question_id__put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/assessments/attempts/{attempt_id}/finish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Finish Attempt
+         * @description Entrega a prova: devolve a nota e o gabarito.
+         */
+        post: operations["finish_attempt_api_v1_assessments_attempts__attempt_id__finish_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1226,6 +1478,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/ai/quotas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Ai Quotas
+         * @description Uso do plano gratuito por modelo (contado pelo app) contra os limites cadastrados.
+         */
+        get: operations["ai_quotas_api_v1_admin_ai_quotas_get"];
+        /** Ai Set Quotas */
+        put: operations["ai_set_quotas_api_v1_admin_ai_quotas_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1333,6 +1606,47 @@ export interface components {
             /** Motivating Texts */
             motivating_texts: string | null;
         };
+        /**
+         * AdminUserOut
+         * @description Conta vista pelo admin: identificação e situação. Nada de redações ou respostas.
+         */
+        AdminUserOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /** Email */
+            email: string;
+            role: components["schemas"]["UserRole"];
+            /** Email Verified At */
+            email_verified_at: string | null;
+            /** Disabled At */
+            disabled_at: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
+        /** AdminUserPage */
+        AdminUserPage: {
+            /** Items */
+            items: components["schemas"]["AdminUserOut"][];
+            /** Total */
+            total: number;
+            /** Next Cursor */
+            next_cursor: string | null;
+        };
+        /** AdminUserUpdate */
+        AdminUserUpdate: {
+            /** Role */
+            role?: ("student" | "teacher") | null;
+            /** Disabled */
+            disabled?: boolean | null;
+        };
         /** Alert */
         Alert: {
             /**
@@ -1397,6 +1711,224 @@ export interface components {
             correct: number;
             /** Pct */
             pct: number | null;
+        };
+        /** AssessmentDetail */
+        AssessmentDetail: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Title */
+            title: string;
+            /** Share Code */
+            share_code: string;
+            /** Url */
+            url: string;
+            /** Is Open */
+            is_open: boolean;
+            /** Question Count */
+            question_count: number;
+            /** Attempts */
+            attempts: number;
+            /** Finished */
+            finished: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /** Instructions */
+            instructions: string | null;
+            /** Questions */
+            questions: components["schemas"]["TeacherQuestion"][];
+        };
+        /** AssessmentIn */
+        AssessmentIn: {
+            /** Title */
+            title: string;
+            /** Instructions */
+            instructions?: string | null;
+            /** Question Ids */
+            question_ids: number[];
+        };
+        /**
+         * AssessmentPublic
+         * @description O que o aluno vê antes de começar (sem questões nem gabarito).
+         */
+        AssessmentPublic: {
+            /** Title */
+            title: string;
+            /** Instructions */
+            instructions: string | null;
+            /** Teacher Name */
+            teacher_name: string;
+            /** Question Count */
+            question_count: number;
+            /** Is Open */
+            is_open: boolean;
+            attempt: components["schemas"]["AttemptInfo"] | null;
+        };
+        /** AssessmentResults */
+        AssessmentResults: {
+            /**
+             * Assessment Id
+             * Format: uuid
+             */
+            assessment_id: string;
+            /** Total Questions */
+            total_questions: number;
+            /** Attempts */
+            attempts: components["schemas"]["AttemptRow"][];
+            /** Finished */
+            finished: number;
+            /** Avg Pct */
+            avg_pct: number | null;
+            /** Questions */
+            questions: components["schemas"]["QuestionResult"][];
+        };
+        /** AssessmentSummary */
+        AssessmentSummary: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Title */
+            title: string;
+            /** Share Code */
+            share_code: string;
+            /** Url */
+            url: string;
+            /** Is Open */
+            is_open: boolean;
+            /** Question Count */
+            question_count: number;
+            /** Attempts */
+            attempts: number;
+            /** Finished */
+            finished: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
+        /** AssessmentUpdate */
+        AssessmentUpdate: {
+            /** Title */
+            title?: string | null;
+            /** Instructions */
+            instructions?: string | null;
+            /** Question Ids */
+            question_ids?: number[] | null;
+            /** Is Open */
+            is_open?: boolean | null;
+        };
+        /** AttemptAnswerIn */
+        AttemptAnswerIn: {
+            /**
+             * Selected Option
+             * @description null apaga a resposta
+             */
+            selected_option: ("A" | "B" | "C" | "D" | "E") | null;
+        };
+        /** AttemptInfo */
+        AttemptInfo: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Started At
+             * Format: date-time
+             */
+            started_at: string;
+            /** Finished At */
+            finished_at: string | null;
+            /** Correct */
+            correct: number | null;
+            /** Total */
+            total: number | null;
+        };
+        /** AttemptItemResult */
+        AttemptItemResult: {
+            /** Question Id */
+            question_id: number;
+            /** Selected Option */
+            selected_option: ("A" | "B" | "C" | "D" | "E") | null;
+            /** Correct Option */
+            correct_option: ("A" | "B" | "C" | "D" | "E") | null;
+            /** Is Correct */
+            is_correct: boolean;
+            /** Explanation Md */
+            explanation_md: string | null;
+        };
+        /**
+         * AttemptOut
+         * @description Questões SEM gabarito enquanto a prova não for entregue; `result` só depois.
+         */
+        AttemptOut: {
+            attempt: components["schemas"]["AttemptInfo"];
+            /** Title */
+            title: string;
+            /** Instructions */
+            instructions: string | null;
+            /** Is Open */
+            is_open: boolean;
+            /** Questions */
+            questions: components["schemas"]["QuestionOut"][];
+            /** Answers */
+            answers: {
+                [key: string]: "A" | "B" | "C" | "D" | "E";
+            };
+            /** Result */
+            result?: components["schemas"]["AttemptItemResult"][] | null;
+        };
+        /**
+         * AttemptRow
+         * @description Um aluno que abriu a prova. Nome e e-mail: o aluno é avisado antes de começar.
+         */
+        AttemptRow: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Student Name */
+            student_name: string;
+            /** Student Email */
+            student_email: string;
+            /**
+             * Started At
+             * Format: date-time
+             */
+            started_at: string;
+            /** Finished At */
+            finished_at: string | null;
+            /** Answered */
+            answered: number;
+            /** Correct */
+            correct: number | null;
+            /** Total */
+            total: number;
+            /** Pct */
+            pct: number | null;
+            /** Answers */
+            answers: {
+                [key: string]: "A" | "B" | "C" | "D" | "E";
+            };
         };
         /** BlockIn */
         BlockIn: {
@@ -2092,6 +2624,71 @@ export interface components {
             /** Hours */
             hours: number;
         };
+        /** InviteIn */
+        InviteIn: {
+            /**
+             * Role
+             * @enum {string}
+             */
+            role: "student" | "teacher";
+            /**
+             * Note
+             * @description Para quem é o convite
+             */
+            note?: string | null;
+            /**
+             * Max Uses
+             * @description null = sem limite
+             */
+            max_uses?: number | null;
+            /**
+             * Expires In Days
+             * @description null = não vence
+             */
+            expires_in_days?: number | null;
+        };
+        /** InviteOut */
+        InviteOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Code */
+            code: string;
+            /** Url */
+            url: string;
+            role: components["schemas"]["UserRole"];
+            /** Note */
+            note: string | null;
+            /** Max Uses */
+            max_uses: number | null;
+            /** Uses */
+            uses: number;
+            /** Expires At */
+            expires_at: string | null;
+            /** Revoked At */
+            revoked_at: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "active" | "expired" | "used_up" | "revoked";
+        };
+        /**
+         * InvitePublic
+         * @description O que a tela de cadastro precisa saber do convite (sem dados de quem criou).
+         */
+        InvitePublic: {
+            role: components["schemas"]["UserRole"];
+            /** Expires At */
+            expires_at: string | null;
+        };
         /**
          * JobOut
          * @description Sem payload: e-mails e ids de alunos ficam de fora.
@@ -2167,6 +2764,8 @@ export interface components {
         Limits: {
             /** Essays Per Month */
             essays_per_month?: number | null;
+            /** Teacher Essays Per Month */
+            teacher_essays_per_month?: number | null;
             /** Ai Budget Usd */
             ai_budget_usd?: number | null;
         };
@@ -2179,6 +2778,15 @@ export interface components {
             email: string;
             /** Password */
             password: string;
+        };
+        /** Meter */
+        Meter: {
+            /** Used */
+            used: number;
+            /** Limit */
+            limit: number | null;
+            /** Pct */
+            pct: number | null;
         };
         /** ModelOut */
         ModelOut: {
@@ -2541,6 +3149,25 @@ export interface components {
             /** Total */
             total: number;
         };
+        /** QuestionResult */
+        QuestionResult: {
+            /** Question Id */
+            question_id: number;
+            /** Position */
+            position: number;
+            /** Correct Option */
+            correct_option: ("A" | "B" | "C" | "D" | "E") | null;
+            /** Answered */
+            answered: number;
+            /** Correct */
+            correct: number;
+            /** Pct */
+            pct: number | null;
+            /** Distribution */
+            distribution: {
+                [key: string]: number;
+            };
+        };
         /**
          * QuestionStatsOut
          * @description Acerto pela ÚLTIMA tentativa de cada questão; a série temporal conta todas.
@@ -2576,8 +3203,95 @@ export interface components {
             /** Cancelled */
             cancelled: number;
         };
+        /** QuotaDay */
+        QuotaDay: {
+            /**
+             * Day
+             * Format: date
+             */
+            day: string;
+            /** Requests */
+            requests: number;
+            /** Input Tokens */
+            input_tokens: number;
+            /** Output Tokens */
+            output_tokens: number;
+        };
+        /** QuotaRule */
+        QuotaRule: {
+            /**
+             * Provider
+             * @enum {string}
+             */
+            provider: "anthropic" | "openai" | "google";
+            /**
+             * Model Match
+             * @description Trecho do nome do modelo (ex.: flash-lite)
+             */
+            model_match: string;
+            /**
+             * Rpm
+             * @description Requisições por minuto
+             */
+            rpm?: number | null;
+            /**
+             * Tpm
+             * @description Tokens de entrada por minuto
+             */
+            tpm?: number | null;
+            /**
+             * Rpd
+             * @description Requisições por dia
+             */
+            rpd?: number | null;
+        };
+        /** QuotaUsage */
+        QuotaUsage: {
+            rule: components["schemas"]["QuotaRule"];
+            /**
+             * Models
+             * @description Modelos reais que casaram (o alias vira a versão)
+             */
+            models: string[];
+            rpm: components["schemas"]["Meter"];
+            tpm: components["schemas"]["Meter"];
+            rpd: components["schemas"]["Meter"];
+            /** Peak Rpm Today */
+            peak_rpm_today: number;
+            /** Input Tokens Today */
+            input_tokens_today: number;
+            /** Output Tokens Today */
+            output_tokens_today: number;
+            /**
+             * Day Resets At
+             * Format: date-time
+             */
+            day_resets_at: string;
+            /**
+             * Level
+             * @enum {string}
+             */
+            level: "ok" | "warning" | "error";
+            /** History */
+            history: components["schemas"]["QuotaDay"][];
+        };
+        /** QuotasIn */
+        QuotasIn: {
+            /** Quotas */
+            quotas: components["schemas"]["QuotaRule"][];
+        };
+        /** QuotasOut */
+        QuotasOut: {
+            /** Quotas */
+            quotas: components["schemas"]["QuotaUsage"][];
+        };
         /** RegisterIn */
         RegisterIn: {
+            /**
+             * Invite Code
+             * @description Código do link de convite
+             */
+            invite_code: string;
             /** Name */
             name: string;
             /**
@@ -2766,6 +3480,50 @@ export interface components {
             /** Source */
             source: string;
         };
+        /**
+         * TeacherQuestion
+         * @description Questão com gabarito: só o dono da prova (ou o admin) recebe.
+         */
+        TeacherQuestion: {
+            /** Id */
+            id: number;
+            /** Year */
+            year: number;
+            /**
+             * Track
+             * @default enem
+             * @enum {string}
+             */
+            track: "enem" | "concurso";
+            /** @default multiple_choice */
+            format: components["schemas"]["QuestionFormat"];
+            /** Area Code */
+            area_code: string;
+            /** Area Name */
+            area_name: string;
+            subject: components["schemas"]["SubjectRef"] | null;
+            /** Topics */
+            topics: components["schemas"]["TopicOut"][];
+            /** Skill Code */
+            skill_code: number | null;
+            foreign_language: components["schemas"]["ForeignLanguage"] | null;
+            /** Difficulty */
+            difficulty: ("facil" | "media" | "dificil") | null;
+            /** Statement Md */
+            statement_md: string;
+            /** Options */
+            options: components["schemas"]["OptionOut"][];
+            /** Bookmarked */
+            bookmarked: boolean;
+            /** Positions */
+            positions: components["schemas"]["ExamPosition"][];
+            /** Position */
+            position: number;
+            /** Correct Option */
+            correct_option: ("A" | "B" | "C" | "D" | "E") | null;
+            /** Explanation Md */
+            explanation_md: string | null;
+        };
         /** TestOut */
         TestOut: {
             /** Ok */
@@ -2916,7 +3674,7 @@ export interface components {
          * UserRole
          * @enum {string}
          */
-        UserRole: "student" | "admin";
+        UserRole: "student" | "teacher" | "admin";
         /** UserUpdate */
         UserUpdate: {
             /** Name */
@@ -3214,6 +3972,37 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    check_invite_api_v1_invites__code__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvitePublic"];
+                };
             };
             /** @description Validation Error */
             422: {
@@ -4466,6 +5255,161 @@ export interface operations {
             };
         };
     };
+    list_invites_api_v1_admin_invites_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InviteOut"][];
+                };
+            };
+        };
+    };
+    create_invite_api_v1_admin_invites_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InviteIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InviteOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    revoke_invite_api_v1_admin_invites__invite_id__revoke_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                invite_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InviteOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_users_api_v1_admin_users_get: {
+        parameters: {
+            query?: {
+                /** @description Nome ou e-mail */
+                q?: string | null;
+                role?: components["schemas"]["UserRole"] | null;
+                disabled?: boolean | null;
+                limit?: number;
+                cursor?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminUserPage"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_user_api_v1_admin_users__user_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                user_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminUserUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminUserOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     contest_filters_api_v1_contests_filters_get: {
         parameters: {
             query?: never;
@@ -4808,6 +5752,343 @@ export interface operations {
                     "application/json": {
                         [key: string]: unknown;
                     };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_assessments_api_v1_teacher_assessments_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssessmentSummary"][];
+                };
+            };
+        };
+    };
+    create_assessment_api_v1_teacher_assessments_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssessmentIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssessmentDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_assessment_api_v1_teacher_assessments__assessment_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                assessment_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssessmentDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_assessment_api_v1_teacher_assessments__assessment_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                assessment_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_assessment_api_v1_teacher_assessments__assessment_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                assessment_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssessmentUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssessmentDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    assessment_results_api_v1_teacher_assessments__assessment_id__results_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                assessment_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssessmentResults"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    assessment_by_code_api_v1_assessments_by_code__code__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssessmentPublic"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    start_assessment_api_v1_assessments_by_code__code__start_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttemptOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_attempt_api_v1_assessments_attempts__attempt_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                attempt_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttemptOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    save_answer_api_v1_assessments_attempts__attempt_id__answers__question_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                attempt_id: string;
+                question_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AttemptAnswerIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    finish_attempt_api_v1_assessments_attempts__attempt_id__finish_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                attempt_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttemptOut"];
                 };
             };
             /** @description Validation Error */
@@ -5429,6 +6710,59 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Calibration"][];
+                };
+            };
+        };
+    };
+    ai_quotas_api_v1_admin_ai_quotas_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QuotasOut"];
+                };
+            };
+        };
+    };
+    ai_set_quotas_api_v1_admin_ai_quotas_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["QuotasIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QuotasOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

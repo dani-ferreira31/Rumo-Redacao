@@ -4,6 +4,7 @@ import { ExternalLink, KeyRound, PlugZap, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
 import { AdminHeader, EmptyState, Section, StatusBadge } from "@/components/admin/kit";
+import { QuotaSection } from "@/components/admin/quota-section";
 import { Alert, Button, Spinner, TextField } from "@/components/ui";
 import {
   type AITask,
@@ -71,6 +72,8 @@ export function AIPanel() {
           (veja o README) e reinicie. Enquanto isso, valem as chaves do <code>.env</code>.
         </Alert>
       ) : null}
+
+      <QuotaSection />
 
       <Section title="Provedores e chaves" description="A chave fica criptografada no servidor e nunca é mostrada de novo.">
         {!providers ? (

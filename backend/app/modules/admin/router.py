@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.db import get_session
 from app.core.deps import require_admin
+from app.core.enums import UserRole
 from app.core.errors import NotFoundError
 from app.modules.admin.schemas import (
     AdminQuestionPage,
@@ -16,6 +17,8 @@ from app.modules.admin.schemas import (
     ThemeUpdate,
 )
 from app.modules.essays.models import EssayTheme
+from app.modules.invites import service as invites
+from app.modules.invites.schemas import InviteIn, InviteOut
 from app.modules.questions import service as questions
 from app.modules.questions.models import KnowledgeArea, Subject
 from app.modules.questions.schemas import (
@@ -24,7 +27,10 @@ from app.modules.questions.schemas import (
     QuestionListItem,
     SubjectRef,
 )
+from app.modules.questions.service import _decode_offset, _encode_offset
+from app.modules.users import service as users
 from app.modules.users.models import User
+from app.modules.users.schemas import AdminUserOut, AdminUserPage, AdminUserUpdate
 from app.storage import LocalStorage, get_storage
 
 router = APIRouter(prefix="/admin", tags=["admin"])
@@ -134,3 +140,65 @@ async def update_theme(
     await session.commit()
     await session.refresh(theme)
     return _theme_out(theme)
+
+
+# ---- convites ----------------------------------------------------------------------
+
+
+@router.get("/invites", response_model=list[InviteOut])
+async def list_invites(
+    _: User = Depends(require_admin), session: AsyncSession = Depends(get_session)
+):
+    return await invites.list_invites(session)
+
+
+@router.post("/invites", response_model=InviteOut, status_code=status.HTTP_201_CREATED)
+async def create_invite(
+    data: InviteIn,
+    admin: User = Depends(require_admin),
+    session: AsyncSession = Depends(get_session),
+):
+    """Gera um link de cadastro de aluno ou professor."""
+    return await invites.create_invite(session, admin, data)
+
+
+@router.post("/invites/{invite_id}/revoke", response_model=InviteOut)
+async def revoke_invite(
+    invite_id: uuid.UUID,
+    _: User = Depends(require_admin),
+    session: AsyncSession = Depends(get_session),
+):
+    return await invites.revoke_invite(session, invite_id)
+
+
+# ---- usuários ----------------------------------------------------------------------
+
+
+@router.get("/users", response_model=AdminUserPage)
+async def list_users(
+    q: str | None = Query(default=None, max_length=200, description="Nome ou e-mail"),
+    role: UserRole | None = Query(default=None),
+    disabled: bool | None = Query(default=None),
+    limit: int = Query(default=50, ge=1, le=200),
+    cursor: str | None = Query(default=None),
+    _: User = Depends(require_admin),
+    session: AsyncSession = Depends(get_session),
+):
+    """Contas da plataforma (nome, e-mail, papel e situação). Sem redações nem respostas."""
+    offset = _decode_offset(cursor)
+    rows, total = await users.admin_list_users(session, q, role, disabled, limit, offset)
+    next_cursor = _encode_offset(offset + limit) if offset + limit < total else None
+    return AdminUserPage(
+        items=[AdminUserOut.model_validate(u) for u in rows], total=total, next_cursor=next_cursor
+    )
+
+
+@router.patch("/users/{user_id}", response_model=AdminUserOut)
+async def update_user(
+    user_id: uuid.UUID,
+    data: AdminUserUpdate,
+    admin: User = Depends(require_admin),
+    session: AsyncSession = Depends(get_session),
+):
+    """Troca o papel (aluno ou professor) ou desativa/reativa a conta."""
+    return AdminUserOut.model_validate(await users.admin_update_user(session, admin, user_id, data))

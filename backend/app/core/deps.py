@@ -32,6 +32,13 @@ async def get_current_user(
         raise AppError(
             "invalid_access_token", "Sessão expirada. Faça login novamente.", 401, headers=_WWW_AUTH
         )
+    if user.disabled_at is not None:
+        raise AppError(
+            "account_disabled",
+            "Esta conta foi desativada. Fale com o administrador.",
+            401,
+            headers=_WWW_AUTH,
+        )
     return user
 
 
@@ -44,6 +51,12 @@ async def require_verified_user(user: User = Depends(get_current_user)) -> User:
 async def require_admin(user: User = Depends(get_current_user)) -> User:
     if user.role != UserRole.admin:
         raise AppError("forbidden", "Você não tem permissão para esta ação.", 403)
+    return user
+
+
+async def require_teacher(user: User = Depends(get_current_user)) -> User:
+    if user.role not in (UserRole.teacher, UserRole.admin):
+        raise AppError("forbidden", "Área restrita a professores.", 403)
     return user
 
 

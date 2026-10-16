@@ -18,6 +18,7 @@ from app.modules.auth.models import RefreshToken
 from app.modules.essays.models import Essay
 from app.modules.questions.models import QuestionAttempt
 from app.modules.system import budget as budget_mod
+from app.modules.system import quota as quota_mod
 from app.modules.system.models import AppSetting
 from app.modules.system.schemas import (
     Alert,
@@ -303,6 +304,17 @@ async def overview(session: AsyncSession) -> OverviewOut:
                 href="/admin/custos",
             )
         )
+    # só a cota do dia vira alerta: o limite por minuto oscila e se resolve sozinho
+    for q in (await quota_mod.report(session, now)).quotas:
+        pct = q.rpd.pct
+        if pct is not None and pct >= quota_mod.WARN_PCT:
+            health_alerts.append(
+                Alert(
+                    level="error" if pct >= 100 else "warning",
+                    message=f"Cota gratuita do dia ({q.rule.model_match}) em {pct:.0f}%.",
+                    href="/admin/ia",
+                )
+            )
     bad_keys = await session.scalars(
         select(AICredential.provider).where(AICredential.last_test_ok.is_(False))
     )

@@ -10,9 +10,11 @@ from app.core.health import router as health_router
 from app.core.logging import bind_log_context, clear_log_context, configure_logging
 from app.core.rate_limit import register_rate_limit
 from app.modules.admin.router import router as admin_router
+from app.modules.assessments.router import router as assessments_router
 from app.modules.auth.router import router as auth_router
 from app.modules.contests.router import router as contests_router
 from app.modules.essays.router import router as essays_router
+from app.modules.invites.router import router as invites_router
 from app.modules.planner.router import router as planner_router
 from app.modules.questions.router import router as questions_router
 from app.modules.stats.router import router as stats_router
@@ -57,12 +59,14 @@ def create_app() -> FastAPI:
     api.include_router(health_router)
     api.include_router(files_router)
     api.include_router(auth_router)
+    api.include_router(invites_router)
     api.include_router(users_router)
     api.include_router(essays_router)
     api.include_router(questions_router)
     api.include_router(planner_router)
     api.include_router(admin_router)
     api.include_router(contests_router)
+    api.include_router(assessments_router)
     api.include_router(stats_router)
     api.include_router(system_router)
     app.include_router(api)

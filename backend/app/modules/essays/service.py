@@ -144,10 +144,11 @@ def normalize_text(text: str) -> str:
 
 
 async def _check_limits(session: AsyncSession, user: User) -> None:
-    """Limite mensal por aluno e orçamento de IA (o admin não tem limite)."""
+    """Limite mensal por aluno (e por professor) e orçamento de IA (o admin não tem limite)."""
     if user.role == UserRole.admin:
         return
-    limit = (await get_setting(session, "limits")).get("essays_per_month")
+    key = "teacher_essays_per_month" if user.role == UserRole.teacher else "essays_per_month"
+    limit = (await get_setting(session, "limits")).get(key)
     if limit:
         try:
             tz = ZoneInfo(user.timezone)

@@ -23,18 +23,30 @@ FEATURES = {
     "questions_enem": "Questões do ENEM",
     "questions_concursos": "Questões de concursos",
     "planner": "Cronograma de estudos",
-    "registration": "Novos cadastros",
+    "registration": "Cadastro por convite",
     "email_reminders": "Lembretes por e-mail",
 }
 
 DEFAULTS: dict[str, Any] = {
     "features": {name: True for name in FEATURES},
     # ai_budget_usd None = sem teto. O mês segue o fuso de São Paulo.
-    "limits": {"essays_per_month": 10, "ai_budget_usd": None},
+    # teacher_essays_per_month None = professor sem limite (corrige redações das turmas)
+    "limits": {"essays_per_month": 10, "teacher_essays_per_month": None, "ai_budget_usd": None},
     # tarefa -> {"provider", "model", "effort"}; vazio = usa o .env
     "ai_tasks": {},
     # modelo -> {"input", "output", "cache_read", "cache_write"} em US$ por 1M de tokens
     "ai_pricing": {},
+    # Cota do plano gratuito (o provedor não informa o saldo: o app conta o próprio uso).
+    # model_match casa por trecho do nome do modelo gravado em ai_usage.
+    "ai_quotas": [
+        {
+            "provider": "google",
+            "model_match": "flash-lite",
+            "rpm": 15,
+            "tpm": 250000,
+            "rpd": 1000,
+        }
+    ],
     "worker_heartbeat": None,
 }
 

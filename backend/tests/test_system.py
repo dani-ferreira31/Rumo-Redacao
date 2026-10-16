@@ -20,7 +20,7 @@ from app.modules.system.budget import send_budget_alerts
 from app.modules.system.service import record_heartbeat
 from app.modules.system.settings import set_setting
 from app.modules.users.models import User
-from tests.helpers import PASSWORD, auth, register
+from tests.helpers import PASSWORD, auth, register, register_payload
 
 STUDENT_EMAIL = "aluna.privacidade@example.com"
 STUDENT_NAME = "Joana Privacidade"
@@ -89,13 +89,7 @@ async def test_cadastro_fechado(client, admin_h):
         json={"features": {"registration": False}},
     )
     resp = await client.post(
-        "/api/v1/auth/register",
-        json={
-            "name": "Novo",
-            "email": "novo@example.com",
-            "password": PASSWORD,
-            "birth_date": "2000-01-01",
-        },
+        "/api/v1/auth/register", json=register_payload(name="Novo", email="novo@example.com")
     )
     assert resp.status_code == 503
     assert resp.json()["error"]["code"] == "registration_closed"
@@ -127,6 +121,19 @@ async def test_limite_mensal_de_redacoes(client, admin_h, student_h):
     # admin não tem limite
     for _ in range(3):
         assert (await _send_essay(client, admin_h)).status_code == 202
+
+
+async def test_professor_tem_limite_proprio_de_redacoes(client, db, admin_h, student_h):
+    await client.put(
+        "/api/v1/admin/settings/limits",
+        headers=admin_h,
+        json={"essays_per_month": 1, "teacher_essays_per_month": 3, "ai_budget_usd": None},
+    )
+    await db.execute(update(User).where(User.email == STUDENT_EMAIL).values(role=UserRole.teacher))
+    await db.commit()
+    for _ in range(3):
+        assert (await _send_essay(client, student_h)).status_code == 202
+    assert (await _send_essay(client, student_h)).status_code == 429
 
 
 async def test_orcamento_estourado_pausa_envios_e_avisa_admin(client, db, admin_h, student_h):
@@ -379,6 +386,67 @@ async def test_relatorio_de_custos_por_modelo_e_tarefa(client, db, admin_h):
     assert body90["total_cost_usd"] == 9.75
 
 
+# ---- cota do plano gratuito -----------------------------------------------------------
+
+
+def _gemini(minutes_ago: float, tokens: int = 1000, model: str = "gemini-3.5-flash-lite"):
+    return AIUsage(
+        purpose=AIPurpose.grading,
+        provider="google",
+        model=model,
+        input_tokens=tokens,
+        output_tokens=200,
+        created_at=datetime.now(UTC) - timedelta(minutes=minutes_ago),
+    )
+
+
+async def test_cota_gratuita_conta_uso_do_modelo(client, db, admin_h):
+    resp = await client.put(
+        "/api/v1/admin/ai/quotas",
+        headers=admin_h,
+        json={
+            "quotas": [
+                {
+                    "provider": "google",
+                    "model_match": "flash-lite",
+                    "rpm": 4,
+                    "tpm": 10000,
+                    "rpd": 5,
+                }
+            ]
+        },
+    )
+    assert resp.status_code == 200
+    # 3 no último minuto, 1 mais cedo; outro modelo e outro provedor não contam
+    db.add_all([_gemini(0.1), _gemini(0.2), _gemini(0.3, tokens=5000), _gemini(10)])
+    db.add(_gemini(0.1, model="gemini-3.8-flash"))
+    db.add(AIUsage(purpose=AIPurpose.grading, provider="openai", model="gpt-flash-lite"))
+    await db.commit()
+
+    q = (await client.get("/api/v1/admin/ai/quotas", headers=admin_h)).json()["quotas"][0]
+    assert q["models"] == ["gemini-3.5-flash-lite"]
+    assert q["rpm"] == {"used": 3, "limit": 4, "pct": 75.0}
+    assert q["tpm"] == {"used": 7000, "limit": 10000, "pct": 70.0}
+    assert q["rpd"]["limit"] == 5
+    assert q["rpd"]["used"] in (3, 4)  # a de 10 min atrás pode cair no dia anterior do Pacífico
+    assert q["peak_rpm_today"] >= 1
+    assert q["level"] in ("ok", "warning")
+
+    db.add_all([_gemini(0.05), _gemini(0.05)])
+    await db.commit()
+    q = (await client.get("/api/v1/admin/ai/quotas", headers=admin_h)).json()["quotas"][0]
+    assert q["level"] == "error"  # 5 de 4 no minuto
+    alerts = (await client.get("/api/v1/admin/overview", headers=admin_h)).json()["alerts"]
+    assert any("Cota gratuita do dia" in a["message"] for a in alerts)
+
+
+async def test_cota_padrao_vem_configurada_para_flash_lite(client, admin_h):
+    q = (await client.get("/api/v1/admin/ai/quotas", headers=admin_h)).json()["quotas"]
+    assert [(r["rule"]["provider"], r["rule"]["model_match"]) for r in q] == [
+        ("google", "flash-lite")
+    ]
+
+
 # ---- privacidade ---------------------------------------------------------------------
 
 
@@ -405,6 +473,8 @@ async def test_nenhuma_rota_admin_devolve_dados_de_aluno(client, db, admin_h, st
         "/api/v1/admin/ai/tasks",
         "/api/v1/admin/ai/prices",
         "/api/v1/admin/ai/calibrations",
+        "/api/v1/admin/ai/quotas",
+        "/api/v1/admin/invites",
     ]
     forbidden = [STUDENT_EMAIL, STUDENT_NAME, str(student.id), "Linha 1 da redação"]
     for path in paths:
@@ -412,3 +482,12 @@ async def test_nenhuma_rota_admin_devolve_dados_de_aluno(client, db, admin_h, st
         assert resp.status_code == 200, path
         for value in forbidden:
             assert not re.search(re.escape(value), resp.text, re.I), f"{path} expõe {value!r}"
+
+
+async def test_lista_de_usuarios_mostra_conta_mas_nao_conteudo(client, db, admin_h, student_h):
+    """/admin/users é a exceção combinada: nome e e-mail sim, redação e respostas não."""
+    await _send_essay(client, student_h)
+    resp = await client.get("/api/v1/admin/users", headers=admin_h)
+    assert STUDENT_EMAIL in resp.text
+    assert "Linha 1 da redação" not in resp.text
+    assert "essay" not in resp.text

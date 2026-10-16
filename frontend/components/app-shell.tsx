@@ -61,6 +61,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <p className="truncate px-3 text-xs text-slate-500" title={user?.email}>
               {user?.name}
             </p>
+            {user?.role === "teacher" || user?.role === "admin" ? (
+              <Link
+                href="/professor"
+                onClick={() => setOpen(false)}
+                className={`mt-1 block rounded-md px-3 py-2 text-sm font-medium ${
+                  pathname.startsWith("/professor") ? "bg-indigo-600 text-white" : "text-slate-700 hover:bg-slate-200"
+                }`}
+              >
+                Professor
+              </Link>
+            ) : null}
             {user?.role === "admin" ? (
               <Link
                 href="/admin"

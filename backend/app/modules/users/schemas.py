@@ -1,5 +1,6 @@
 import uuid
 from datetime import date, datetime
+from typing import Literal
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from pydantic import BaseModel, ConfigDict, Field, computed_field, field_validator
@@ -57,3 +58,31 @@ class UserUpdate(BaseModel):
 
 class UnsubscribeOut(BaseModel):
     email_reminders_enabled: bool
+
+
+# ---- admin: gestão de contas -----------------------------------------------------
+
+
+class AdminUserOut(BaseModel):
+    """Conta vista pelo admin: identificação e situação. Nada de redações ou respostas."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    name: str
+    email: str
+    role: UserRole
+    email_verified_at: datetime | None
+    disabled_at: datetime | None
+    created_at: datetime
+
+
+class AdminUserPage(BaseModel):
+    items: list[AdminUserOut]
+    total: int
+    next_cursor: str | None
+
+
+class AdminUserUpdate(BaseModel):
+    role: Literal[UserRole.student, UserRole.teacher] | None = None
+    disabled: bool | None = None

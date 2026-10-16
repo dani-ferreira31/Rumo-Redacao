@@ -1,7 +1,7 @@
 import uuid
 from datetime import date, datetime
 
-from sqlalchemy import Boolean, Date, DateTime, SmallInteger, Text, text
+from sqlalchemy import Boolean, Date, DateTime, ForeignKey, SmallInteger, Text, text
 from sqlalchemy.dialects.postgresql import CITEXT, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -27,6 +27,11 @@ class User(Base):
     timezone: Mapped[str] = mapped_column(Text, server_default=text("'America/Sao_Paulo'"))
     target_exam_year: Mapped[int | None] = mapped_column(SmallInteger)
     email_reminders_enabled: Mapped[bool] = mapped_column(Boolean, server_default=text("true"))
+    # Conta bloqueada pelo admin: não entra nem renova a sessão.
+    disabled_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    invite_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("invites.id", ondelete="SET NULL", use_alter=True, name="users_invite_id_fkey")
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=text("now()")
     )

@@ -97,3 +97,21 @@ export const CONTEST_STATUS: Record<string, { label: string; level: "ok" | "warn
   published: { label: "Publicada", level: "ok" },
   failed: { label: "Falhou", level: "error" },
 };
+
+export type Invite = S["InviteOut"];
+export type AdminUser = S["AdminUserOut"];
+export type QuotaUsage = S["QuotaUsage"];
+export type QuotaRule = S["QuotaRule"];
+
+export const ROLE_LABEL: Record<string, string> = {
+  student: "Aluno",
+  teacher: "Professor",
+  admin: "Admin",
+};
+
+export const INVITE_STATUS: Record<string, { label: string; level: "ok" | "warning" | "error" }> = {
+  active: { label: "Ativo", level: "ok" },
+  expired: { label: "Vencido", level: "warning" },
+  used_up: { label: "Esgotado", level: "warning" },
+  revoked: { label: "Revogado", level: "error" },
+};

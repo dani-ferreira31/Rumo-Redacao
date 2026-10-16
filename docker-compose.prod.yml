@@ -2,6 +2,10 @@
 #   cp .env.prod.example .env.prod   (e preencha)
 #   docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
 # Guia completo: deploy/README.md
+#
+# HTTPS e proxy reverso ficam no Nginx Proxy Manager da VPS (fora deste compose).
+# backend e frontend entram na rede externa do NPM (PROXY_NETWORK, padrão "proxy-network")
+# com os nomes rumo1000-backend e rumo1000-frontend. Nenhuma porta é publicada.
 name: rumo1000
 
 x-backend: &backend
@@ -18,23 +22,6 @@ x-backend: &backend
       condition: service_healthy
 
 services:
-  caddy:
-    image: caddy:2
-    restart: unless-stopped
-    ports:
-      - "80:80"
-      - "443:443"
-      - "443:443/udp"
-    environment:
-      DOMAIN: ${DOMAIN}
-    volumes:
-      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
-      - caddy_data:/data
-      - caddy_config:/config
-    depends_on:
-      - backend
-      - frontend
-
   postgres:
     image: postgres:16
     restart: unless-stopped
@@ -54,6 +41,10 @@ services:
   backend:
     <<: *backend
     # aplica as migrations antes de subir a API (uma instância só)
+    networks:
+      default:
+      proxy:
+        aliases: [rumo1000-backend]
     command: >
       sh -c "alembic upgrade head &&
              uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 2
@@ -73,6 +64,10 @@ services:
       context: ./frontend
       target: prod
     restart: unless-stopped
+    networks:
+      default:
+      proxy:
+        aliases: [rumo1000-frontend]
 
   backup:
     image: postgres:16
@@ -94,8 +89,11 @@ services:
       postgres:
         condition: service_healthy
 
+networks:
+  proxy:
+    external: true
+    name: ${PROXY_NETWORK:-proxy-network}
+
 volumes:
   pgdata:
   storage:
-  caddy_data:
-  caddy_config:

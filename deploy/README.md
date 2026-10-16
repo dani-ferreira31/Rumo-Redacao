@@ -1,10 +1,16 @@
 # Deploy na VPS
 
-Tudo roda num único `docker compose` na VPS. Os únicos serviços externos são a API da Anthropic e o Resend.
+Tudo roda num `docker compose` na VPS, atrás do **Nginx Proxy Manager** (NPM) que já existe no servidor e do **Cloudflare** (DNS com proxy). Os únicos serviços externos são as APIs de IA e o Resend.
+
+Domínio de produção: `rumo.4bsistemas.com.br`.
+
+```
+aluno → Cloudflare (HTTPS) → NPM na VPS (443) → rumo1000-frontend:3000
+                                              → rumo1000-backend:8000  (/api/*, /health)
+```
 
 | Serviço | O que faz |
 |---|---|
-| `caddy` | HTTPS automático (Let's Encrypt) e proxy reverso. `/api/*` e `/health` vão para o backend; o resto vai para o frontend |
 | `postgres` | Banco, sem porta exposta para fora |
 | `backend` | API FastAPI. Aplica as migrations ao subir |
 | `worker` | Fila de jobs (transcrição, correção, e-mails) e lembretes do cronograma |
@@ -14,7 +20,8 @@ Tudo roda num único `docker compose` na VPS. Os únicos serviços externos são
 ## Requisitos
 
 - VPS com Ubuntu 24.04 (ou similar), 2 vCPU e 4 GB de RAM. 2 GB funcionam, mas o build do frontend fica lento.
-- Um domínio com registro DNS **A** (e AAAA, se houver IPv6) apontando para o IP da VPS.
+- Nginx Proxy Manager rodando em Docker na VPS (portas 80/443).
+- O domínio no Cloudflare.
 - Chave da API da Anthropic e chave do Resend, com o domínio de envio verificado no Resend.
 
 ## 1. Preparar o servidor
@@ -24,26 +31,37 @@ Tudo roda num único `docker compose` na VPS. Os únicos serviços externos são
 curl -fsSL https://get.docker.com | sh
 sudo usermod -aG docker $USER      # saia e entre de novo na sessão
 
-# Firewall: só SSH, HTTP e HTTPS
-sudo ufw allow OpenSSH
-sudo ufw allow 80/tcp
-sudo ufw allow 443/tcp
-sudo ufw allow 443/udp
-sudo ufw enable
+# O NPM já está na rede Docker "proxy-network" (compartilhada com os outros sistemas).
+docker network inspect proxy-network --format '{{range .Containers}}{{.Name}} {{end}}'
 ```
 
-> O Docker publica portas por fora do ufw. Neste compose, só o Caddy publica portas (80/443), o que é o esperado.
+> Este compose não publica nenhuma porta: backend e frontend entram na rede `proxy-network` (variável `PROXY_NETWORK` no `.env.prod`) como `rumo1000-backend` e `rumo1000-frontend`, nomes únicos para não colidir com os outros sistemas da mesma rede. Postgres e worker ficam só na rede interna do projeto.
+>
+> A porta 81 (painel do NPM) não deve ficar aberta para a internet: acesse por túnel SSH (`ssh -L 8181:localhost:81 usuario@vps` e abra `http://localhost:8181`) ou restrinja no firewall.
 
 ## 2. Código e configuração
 
+O repositório é clonado em `~/rumo1000` (o deploy automático usa esse caminho). Se o repositório for privado, crie uma *deploy key* na VPS:
+
 ```bash
-git clone <seu-repositorio> rumo1000 && cd rumo1000
+ssh-keygen -t ed25519 -C "vps-rumo1000" -f ~/.ssh/github_rumo1000 -N ""
+cat ~/.ssh/github_rumo1000.pub
+# GitHub → repositório → Settings → Deploy keys → Add deploy key (só leitura), cole a chave
+cat >> ~/.ssh/config <<'CFG'
+Host github.com
+  IdentityFile ~/.ssh/github_rumo1000
+  IdentitiesOnly yes
+CFG
+```
+
+```bash
+git clone git@github.com:dani-ferreira31/Rumo-Redacao.git ~/rumo1000 && cd ~/rumo1000
 cp .env.prod.example .env.prod
 nano .env.prod
 ```
 
 Preencha pelo menos estes campos:
-- `DOMAIN`, `APP_URL`, `API_URL`
+- `APP_URL` e `API_URL` (`https://rumo.4bsistemas.com.br`)
 - `POSTGRES_PASSWORD`, repetindo a mesma senha dentro de `DATABASE_URL`
 - `JWT_SECRET` (gere com `openssl rand -hex 32`)
 - `SETTINGS_ENCRYPTION_KEY`, que criptografa as chaves de IA salvas pelo painel (veja o README principal para gerar). **Guarde uma cópia fora da VPS**: sem ela, as chaves do painel precisam ser cadastradas de novo
@@ -58,10 +76,27 @@ Depois proteja o arquivo: `chmod 600 .env.prod`.
 ```bash
 docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
 docker compose -f docker-compose.prod.yml --env-file .env.prod ps
-curl https://SEU-DOMINIO/health           # {"db":"ok","storage":"ok"}
 ```
 
-Na primeira subida, o Caddy obtém o certificado sozinho (pode levar alguns segundos).
+Depois configure o Cloudflare e o NPM (seção 3.1) e teste: `curl https://rumo.4bsistemas.com.br/health` deve devolver `{"db":"ok","storage":"ok"}`.
+
+## 3.1 Cloudflare e Nginx Proxy Manager
+
+**Cloudflare**
+1. DNS → Add record: tipo `A`, nome `rumo`, IPv4 da VPS, **Proxied** (nuvem laranja).
+2. SSL/TLS → Overview: modo **Full (strict)**.
+3. SSL/TLS → Origin Server → **Create Certificate**: hostnames `rumo.4bsistemas.com.br` (ou `*.4bsistemas.com.br`), formato PEM, validade 15 anos. Copie o *Origin Certificate* e a *Private Key* (a chave só aparece uma vez).
+4. Não use cache de HTML nem Rocket Loader neste host. As regras padrão (que só fazem cache de arquivos estáticos) servem.
+
+**Nginx Proxy Manager**
+1. SSL Certificates → Add SSL Certificate → **Custom**: nome `rumo-cloudflare-origin`, cole o certificado e a chave do passo 3.
+2. Hosts → Proxy Hosts → Add Proxy Host:
+   - **Details**: Domain Names `rumo.4bsistemas.com.br`; Scheme `http`; Forward Hostname `rumo1000-frontend`; Forward Port `3000`; marque *Block Common Exploits*. Deixe *Cache Assets* desmarcado.
+   - **SSL**: escolha `rumo-cloudflare-origin`; marque *Force SSL* e *HTTP/2 Support*.
+   - **Advanced**: cole o conteúdo de [`nginx-proxy-manager.conf`](nginx-proxy-manager.conf), que manda `/api/*` e `/health` para o backend e libera uploads de até 25 MB.
+3. Salve. O status do host deve ficar *Online*.
+
+Alternativa ao certificado de origem: no passo 1 do NPM, use *Let's Encrypt* com **DNS Challenge** do Cloudflare (token de API com permissão `Zone:DNS:Edit`). O desafio HTTP não funciona bem atrás do proxy do Cloudflare.
 
 ## 4. Dados iniciais
 
@@ -82,6 +117,31 @@ dc exec backend python -m scripts.import_questions --year 2023 --microdados data
 Entre com o admin e **troque a senha** pelo fluxo "Esqueci minha senha".
 
 ## 5. Atualizar a aplicação
+
+### Deploy automático (GitHub Actions)
+
+`.github/workflows/deploy.yml` roda a cada push na `main` (ou manualmente em Actions → Deploy → Run workflow): entra na VPS por SSH, faz `git reset --hard origin/main` em `~/rumo1000` e sobe com `up -d --build --wait`. O `.env.prod`, `data/` e `backups/` não são versionados e não são tocados.
+
+Configuração (uma vez só):
+
+1. Gere um par de chaves só para o GitHub Actions (no seu computador):
+   ```bash
+   ssh-keygen -t ed25519 -C "github-actions-rumo1000" -f ~/.ssh/rumo1000_actions -N ""
+   ssh-copy-id -i ~/.ssh/rumo1000_actions.pub -p <porta> <usuario>@<ip-da-vps>
+   ```
+   O usuário precisa estar no grupo `docker` e ser o dono de `~/rumo1000`.
+2. GitHub → repositório → Settings → Secrets and variables → Actions → New repository secret:
+
+   | Secret | Valor |
+   |---|---|
+   | `VPS_HOST` | IP da VPS (não use o domínio: ele passa pelo Cloudflare, que não repassa SSH) |
+   | `VPS_USER` | usuário SSH |
+   | `VPS_PORT` | porta SSH (ex.: `22`) |
+   | `VPS_SSH_KEY` | conteúdo inteiro de `~/.ssh/rumo1000_actions` (a chave **privada**, com as linhas `BEGIN`/`END`) |
+
+3. Faça o primeiro deploy à mão (seções 2 a 4). Os seguintes saem sozinhos a cada push.
+
+### Manual
 
 ```bash
 git pull
@@ -118,7 +178,7 @@ Teste a restauração de vez em quando num ambiente separado.
 
 ## 7. Operação
 
-- **Logs:** `dc logs -f backend worker caddy`. Saem em JSON, com `request_id`, `job_id` e `essay_id`.
+- **Logs:** `dc logs -f backend worker frontend` (o log de acesso HTTP fica no NPM). Saem em JSON, com `request_id`, `job_id` e `essay_id`.
 - **Painel:** Admin → Sistema mostra a saúde dos serviços e a fila (com reprocessar/cancelar); Admin → Módulos e limites liga/desliga partes do app e define o orçamento mensal de IA.
 - **Custo de IA:** página Admin → Custos. A cobrança real fica no console de cada provedor; confira os preços em Admin → Inteligência artificial.
 - **Calibração:** antes de trocar prompt ou modelo, rode `dc exec backend python -m scripts.eval_grading --dataset data/essay-br --n 50 --yes`. Os relatórios ficam em `./reports`. No compose de produção, monte `./reports:/app/reports` se quiser guardá-los fora do container.

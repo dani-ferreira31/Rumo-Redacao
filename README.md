@@ -60,7 +60,7 @@ Para adicionar dependências Python, edite `backend/pyproject.toml` e rode `dock
 
 ## Notas
 
-- **Hospedagem:** VPS própria com Docker Compose e Caddy na frente (HTTPS e mesma origem para front e API). Os únicos serviços externos são o Resend e a Anthropic. O storage é em disco local (volume com backup diário). Guia: `deploy/README.md`.
+- **Hospedagem:** VPS própria com Docker Compose, atrás do Cloudflare e do Nginx Proxy Manager (HTTPS e mesma origem para front e API). Os únicos serviços externos são o Resend e a Anthropic. O storage é em disco local (volume com backup diário). Guia: `deploy/README.md`.
 - **Hot reload:** o backend recarrega sozinho. O **worker não**: depois de mudar código de jobs, rode `docker compose restart worker`. Se uma alteração do frontend não aparecer, rode `docker compose restart frontend`.
 - **Dependências novas do frontend:** o `node_modules` do container fica num volume. Depois de `npm install`, recrie o volume com `docker compose rm -sf frontend && docker volume rm rumo1000_frontend_node_modules && docker compose up -d frontend`.
 - **Produção:** veja `deploy/README.md`.

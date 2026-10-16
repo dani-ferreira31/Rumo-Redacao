@@ -1,7 +1,7 @@
 """Rate limit em memória (slowapi). Suficiente com 1 instância da API.
 
 O IP vem de request.client, que o uvicorn preenche a partir do X-Forwarded-For
-(--proxy-headers) quando a API está atrás do Caddy ou do rewrite do Next.
+(--proxy-headers) quando a API está atrás do Nginx Proxy Manager ou do rewrite do Next.
 """
 
 from fastapi import FastAPI, Request

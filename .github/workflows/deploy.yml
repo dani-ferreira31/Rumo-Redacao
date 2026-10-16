@@ -1,0 +1,36 @@
+# Deploy na VPS a cada push na main (ou manualmente em Actions → Deploy → Run workflow).
+# Secrets do repositório: VPS_HOST, VPS_USER, VPS_PORT, VPS_SSH_KEY.
+# Pré-requisitos na VPS (uma vez só): deploy/README.md, seção "Deploy automático".
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-prod
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Atualizar e subir na VPS
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          port: ${{ secrets.VPS_PORT }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          command_timeout: 30m
+          script: |
+            set -e
+            cd "$HOME/rumo1000"
+            git fetch --prune origin main
+            git reset --hard origin/main
+            dc="docker compose -f docker-compose.prod.yml --env-file .env.prod"
+            $dc up -d --build --remove-orphans --wait --wait-timeout 300
+            $dc ps
+            docker image prune -f

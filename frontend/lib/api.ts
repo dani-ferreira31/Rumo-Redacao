@@ -92,7 +92,7 @@ export function apiFetch(path: string, init?: RequestInit): Promise<Response> {
   return authFetch(new Request(path, { credentials: "include", ...init }));
 }
 
-// Mesma origem: em dev o Next faz rewrite de /api/v1 para o backend; em produção, o Caddy.
+// Mesma origem: em dev o Next faz rewrite de /api/v1 para o backend; em produção, o Nginx Proxy Manager.
 export const api = createClient<paths>({
   baseUrl: typeof window === "undefined" ? "http://localhost" : window.location.origin,
   credentials: "include",

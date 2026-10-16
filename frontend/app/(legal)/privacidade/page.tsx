@@ -33,13 +33,29 @@ export default function PrivacyPage() {
       <h2>3. Compartilhamento com fornecedores</h2>
       <ul>
         <li>
-          <strong>Anthropic (inteligência artificial):</strong> o texto e as fotos das redações são
-          enviados à API da Anthropic, nos Estados Unidos, para transcrição e correção. Isso envolve
-          transferência internacional de dados. [REVISAR: termos de retenção e de uso de dados do
-          provedor, e a base legal da transferência internacional (art. 33 da LGPD).]
+          <strong>Provedores de inteligência artificial:</strong> o texto e as fotos das redações
+          são enviados, para transcrição e correção, a um dos provedores abaixo, conforme a
+          configuração da Plataforma: Google (Gemini), Anthropic (Claude) ou OpenAI (GPT). Os três
+          processam os dados nos Estados Unidos, o que envolve transferência internacional de
+          dados. [REVISAR: termos de retenção e de uso de dados de cada provedor, e a base legal da
+          transferência internacional (art. 33 da LGPD). Atenção: no plano gratuito da API do
+          Gemini, o Google pode usar o conteúdo enviado para melhorar seus produtos, inclusive com
+          revisão humana; no plano pago, não.]
         </li>
         <li><strong>Resend (e-mail):</strong> seu e-mail e o conteúdo das mensagens transacionais e dos lembretes.</li>
         <li><strong>Hospedagem:</strong> servidor próprio em [PROVEDOR/LOCALIZAÇÃO DA VPS].</li>
+      </ul>
+      <p>Dentro da Plataforma, alguns dados ficam visíveis para outras pessoas:</p>
+      <ul>
+        <li>
+          <strong>Professores:</strong> ao fazer uma prova pelo link de um professor, seu nome, seu
+          e-mail e suas respostas ficam visíveis para ele. As suas redações não ficam visíveis para
+          professores.
+        </li>
+        <li>
+          <strong>Administradores:</strong> veem nome, e-mail, tipo de conta e data de cadastro, para
+          controlar o acesso. Não veem suas redações nem suas respostas.
+        </li>
       </ul>
       <p>Não vendemos seus dados nem os usamos para publicidade.</p>
 

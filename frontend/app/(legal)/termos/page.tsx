@@ -17,7 +17,8 @@ export default function TermsPage() {
       <ul>
         <li>Correção de redações no modelo do ENEM feita por inteligência artificial, com notas por competência e comentários;</li>
         <li>Banco de questões de provas anteriores do ENEM, com estatísticas de desempenho;</li>
-        <li>Cronograma de estudos com lembretes por e-mail.</li>
+        <li>Cronograma de estudos com lembretes por e-mail;</li>
+        <li>Provas montadas por professores, respondidas pelo link que o professor compartilha.</li>
       </ul>
 
       <h2>2. Natureza da correção por IA</h2>
@@ -29,12 +30,15 @@ export default function TermsPage() {
       </p>
       <p>
         O texto e as fotos das redações são enviados a um provedor de inteligência artificial
-        (Anthropic) para transcrição e correção, como descrito na Política de Privacidade.
+        (Google, Anthropic ou OpenAI) para transcrição e correção, como descrito na Política de
+        Privacidade.
       </p>
 
       <h2>3. Conta e idade</h2>
       <ul>
+        <li>O cadastro é feito apenas por convite, que define se a conta é de aluno ou de professor.</li>
         <li>Você deve informar dados verdadeiros e manter sua senha em sigilo.</li>
+        <li>Podemos desativar contas que violem estes Termos.</li>
         <li>
           Menores de 18 anos só podem usar a Plataforma com o consentimento do pai, da mãe ou do
           responsável legal, declarado no cadastro.

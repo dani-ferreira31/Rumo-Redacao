@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% from "_button.html" import button %}
+{% block content %}
+<p>Olá, {{ name }}!</p>
+{% if exceeded %}
+<p>O gasto com IA deste mês chegou a <strong>US$ {{ "%.2f"|format(spent) }}</strong> e atingiu o orçamento de US$ {{ "%.2f"|format(budget) }}.</p>
+<p>Novos envios de redação e importações de provas estão pausados até o mês virar ou até você aumentar o orçamento no painel. O que já estava na fila termina normalmente.</p>
+{% else %}
+<p>O gasto com IA deste mês chegou a <strong>US$ {{ "%.2f"|format(spent) }}</strong>, {{ pct }}% do orçamento de US$ {{ "%.2f"|format(budget) }}.</p>
+<p>Ao atingir 100%, novos envios de redação e importações de provas ficam pausados.</p>
+{% endif %}
+{{ button(url, "Abrir o painel de custos") }}
+{% endblock %}

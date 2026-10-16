@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% from "_button.html" import button %}
+{% block content %}
+<p>Olá, {{ name }}!</p>
+<p>{% if minutes %}Daqui a {{ minutes }} minutos{% else %}Agora{% endif %} começa seu bloco de estudo:</p>
+<p style="font-size:18px;font-weight:bold;margin:16px 0;">{{ label }}<br /><span style="font-size:15px;font-weight:normal;color:#475569;">{{ weekday }}, das {{ start }} às {{ end }}</span></p>
+{% if notes %}<p style="color:#475569;">{{ notes }}</p>{% endif %}
+{{ button(url, "Ver meu cronograma") }}
+{% endblock %}
+{% block footer %}Você recebe este lembrete porque ativou lembretes no seu cronograma. <a href="{{ unsubscribe_url }}" style="color:#64748b;">Não quero mais receber lembretes</a>.{% endblock %}

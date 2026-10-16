@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% from "_button.html" import button %}
+{% block content %}
+<p>Olá, {{ name }}!</p>
+<p>A correção da sua redação está pronta. Veja a nota de cada competência, os trechos comentados e as sugestões para a próxima.</p>
+{{ button(url, "Ver correção") }}
+{% endblock %}

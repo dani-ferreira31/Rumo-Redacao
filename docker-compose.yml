@@ -1,0 +1,73 @@
+# Ambiente de desenvolvimento. Produção (VPS + Caddy) fica em docker-compose.prod.yml (Fase 5).
+name: rumo1000
+
+x-backend: &backend
+  build:
+    context: ./backend
+    target: dev
+  env_file: .env
+  volumes:
+    - ./backend:/app
+    - ./data:/app/data:ro          # datasets de calibração (fora do git)
+    - ./reports:/app/reports       # relatórios do eval
+    - storage:/data/storage
+  depends_on:
+    postgres:
+      condition: service_healthy
+
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-app}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-app}
+      POSTGRES_DB: ${POSTGRES_DB:-rumo1000}
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./docker/postgres-init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  backend:
+    <<: *backend
+    command: >
+      uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+      --proxy-headers --forwarded-allow-ips="*"
+    ports:
+      - "127.0.0.1:${BACKEND_PORT:-8000}:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  worker:
+    <<: *backend
+    command: python -m app.worker
+
+  frontend:
+    build:
+      context: ./frontend
+      target: dev
+    environment:
+      BACKEND_INTERNAL_URL: http://backend:8000
+      WATCHPACK_POLLING: "true"
+    ports:
+      - "127.0.0.1:${FRONTEND_PORT:-3000}:3000"
+    volumes:
+      - ./frontend:/app
+      - frontend_node_modules:/app/node_modules
+      - frontend_next:/app/.next
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:
+  storage:
+  frontend_node_modules:
+  frontend_next:

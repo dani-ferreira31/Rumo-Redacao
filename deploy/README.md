@@ -41,7 +41,7 @@ docker network inspect proxy-network --format '{{range .Containers}}{{.Name}} {{
 
 ## 2. Código e configuração
 
-O repositório é clonado em `~/rumo1000` (o deploy automático usa esse caminho). Se o repositório for privado, crie uma *deploy key* na VPS:
+O repositório é clonado em `/opt/projects/Rumo-Redacao` (o deploy automático usa esse caminho). Se o repositório for privado, crie uma *deploy key* na VPS:
 
 ```bash
 ssh-keygen -t ed25519 -C "vps-rumo1000" -f ~/.ssh/github_rumo1000 -N ""
@@ -55,7 +55,7 @@ CFG
 ```
 
 ```bash
-git clone git@github.com:dani-ferreira31/Rumo-Redacao.git ~/rumo1000 && cd ~/rumo1000
+git clone git@github.com:dani-ferreira31/Rumo-Redacao.git /opt/projects/Rumo-Redacao && cd /opt/projects/Rumo-Redacao
 cp .env.prod.example .env.prod
 nano .env.prod
 ```
@@ -120,7 +120,7 @@ Entre com o admin e **troque a senha** pelo fluxo "Esqueci minha senha".
 
 ### Deploy automático (GitHub Actions)
 
-`.github/workflows/deploy.yml` roda a cada push na `main` (ou manualmente em Actions → Deploy → Run workflow): entra na VPS por SSH, faz `git reset --hard origin/main` em `~/rumo1000` e sobe com `up -d --build --wait`. O `.env.prod`, `data/` e `backups/` não são versionados e não são tocados.
+`.github/workflows/deploy.yml` roda a cada push na `main` (ou manualmente em Actions → Deploy → Run workflow): entra na VPS por SSH, faz `git reset --hard origin/main` em `/opt/projects/Rumo-Redacao` e sobe com `up -d --build --wait`. O `.env.prod`, `data/` e `backups/` não são versionados e não são tocados.
 
 Configuração (uma vez só):
 
@@ -129,7 +129,7 @@ Configuração (uma vez só):
    ssh-keygen -t ed25519 -C "github-actions-rumo1000" -f ~/.ssh/rumo1000_actions -N ""
    ssh-copy-id -i ~/.ssh/rumo1000_actions.pub -p <porta> <usuario>@<ip-da-vps>
    ```
-   O usuário precisa estar no grupo `docker` e ser o dono de `~/rumo1000`.
+   O usuário precisa estar no grupo `docker` e ser o dono de `/opt/projects/Rumo-Redacao`.
 2. GitHub → repositório → Settings → Secrets and variables → Actions → New repository secret:
 
    | Secret | Valor |

@@ -27,7 +27,7 @@ jobs:
           command_timeout: 30m
           script: |
             set -e
-            cd "$HOME/rumo1000"
+            cd /opt/projects/Rumo-Redacao
             git fetch --prune origin main
             git reset --hard origin/main
             dc="docker compose -f docker-compose.prod.yml --env-file .env.prod"

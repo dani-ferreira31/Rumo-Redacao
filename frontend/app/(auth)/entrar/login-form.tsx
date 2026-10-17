@@ -3,13 +3,14 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { GuestOnly } from "@/components/guest-only";
 import { Alert, Button, Card, TextField } from "@/components/ui";
 import { api, errorMessage } from "@/lib/api";
+import { type BillingPublic, brl } from "@/lib/payments";
 import { useAuth } from "@/lib/auth";
 import { safeNext } from "@/lib/safe-next";
 
@@ -24,6 +25,10 @@ export function LoginForm() {
   const { startSession } = useAuth();
   const next = safeNext(params.get("next"));
   const [error, setError] = useState<string | null>(null);
+  const [billing, setBilling] = useState<BillingPublic | null>(null);
+  useEffect(() => {
+    api.GET("/api/v1/billing").then(({ data }) => setBilling(data ?? null));
+  }, []);
   const {
     register,
     handleSubmit,
@@ -73,6 +78,12 @@ export function LoginForm() {
             Criar conta
           </Link>
         </div>
+        {billing?.enabled ? (
+          <p className="mt-4 rounded-md bg-slate-50 p-3 text-center text-sm text-slate-600">
+            Sem convite? Crie sua conta e assine por <strong>{brl(billing.price_brl)}</strong>, válido por{" "}
+            <strong>{billing.period_days} dias</strong> a partir do pagamento (PIX ou cartão). Não renova sozinho.
+          </p>
+        ) : null}
       </Card>
     </GuestOnly>
   );

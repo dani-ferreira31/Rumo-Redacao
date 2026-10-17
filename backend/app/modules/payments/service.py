@@ -38,13 +38,14 @@ from app.modules.payments.schemas import (
     PaymentSummary,
     SubscriptionOut,
 )
-from app.modules.system.settings import log_event, set_setting
+from app.modules.system.settings import DEFAULTS, log_event, set_setting
 from app.modules.users.models import User
 
 logger = logging.getLogger(__name__)
 
 TZ = ZoneInfo("America/Sao_Paulo")
 RENEWAL_NOTICE = timedelta(days=3)
+DEFAULT_PERIOD = DEFAULTS["billing"]["period_days"]
 
 # status do Mercado Pago -> status no app
 STATUS = {
@@ -200,7 +201,7 @@ async def _apply(session: AsyncSession, payment: Payment, info: mp.MPPayment) ->
         payment.paid_at = now
         if user and payment.kind == PaymentKind.subscription:
             start = max(now, user.paid_until or now)
-            user.paid_until = start + timedelta(days=payment.period_days or 30)
+            user.paid_until = start + timedelta(days=payment.period_days or DEFAULT_PERIOD)
             log_event(session, "payment", f"Assinatura paga: R$ {_brl(payment.amount)}")
             await queue_email(
                 session,
@@ -237,7 +238,7 @@ async def _apply(session: AsyncSession, payment: Payment, info: mp.MPPayment) ->
         payment.status = new
         # estorno de assinatura: devolve os dias que ela tinha liberado
         if was_approved and user and payment.kind == PaymentKind.subscription and user.paid_until:
-            user.paid_until -= timedelta(days=payment.period_days or 30)
+            user.paid_until -= timedelta(days=payment.period_days or DEFAULT_PERIOD)
             log_event(session, "payment", f"Assinatura estornada: R$ {_brl(payment.amount)}")
     await session.commit()
 

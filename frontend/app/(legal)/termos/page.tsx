@@ -53,7 +53,7 @@ export default function TermsPage() {
       <ul>
         <li>
           Quem se cadastra sem convite paga uma assinatura pelo período informado na página de
-          assinatura (por exemplo, R$ 10,00 por 30 dias). O pagamento é feito pelo Mercado Pago,
+          assinatura (por exemplo, R$ 10,00 por 35 dias). O pagamento é feito pelo Mercado Pago,
           com PIX ou cartão, e <strong>não renova sozinho</strong>: avisamos por e-mail perto do
           vencimento.
         </li>

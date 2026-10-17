@@ -150,8 +150,9 @@ function SignupForm({ code, role, billing }: { code: string | null; role: string
           ) : billing ? (
             <>
               Depois de criar a conta, você assina por{" "}
-              <strong>{brl(billing.price_brl)}</strong> ({billing.period_days} dias de acesso),
-              com PIX ou cartão.
+              <strong>{brl(billing.price_brl)}</strong>, válido por{" "}
+              <strong>{billing.period_days} dias</strong> a partir do pagamento, com PIX ou cartão.
+              Não renova sozinho: avisamos por e-mail antes de vencer.
             </>
           ) : null}
         </p>

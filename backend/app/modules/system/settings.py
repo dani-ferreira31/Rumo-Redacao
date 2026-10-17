@@ -52,7 +52,7 @@ DEFAULTS: dict[str, Any] = {
     "billing": {
         "enabled": False,
         "price_brl": 10.0,
-        "period_days": 30,
+        "period_days": 35,
         "donations_enabled": True,
     },
     "worker_heartbeat": None,

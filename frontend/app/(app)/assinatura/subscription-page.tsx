@@ -107,7 +107,8 @@ export function SubscriptionPage() {
                 <span className="text-base font-medium text-slate-500"> / {sub.period_days} dias</span>
               </p>
               <p className="mt-1 text-sm text-slate-600">
-                Pagamento único pelo Mercado Pago, com PIX ou cartão. Não renova sozinho: avisamos por e-mail perto
+                Cada pagamento vale {sub.period_days} dias a partir da confirmação. PIX ou cartão, pelo Mercado
+                Pago. Não renova sozinho: avisamos por e-mail perto
                 do vencimento. {sub.active ? "Pagando agora, os dias são somados ao seu período atual." : ""}
               </p>
             </div>

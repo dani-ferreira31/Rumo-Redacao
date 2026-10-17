@@ -16,6 +16,7 @@ from app.core.db import SessionLocal, engine
 from app.core.logging import configure_logging
 from app.jobs.registry import load_handlers
 from app.jobs.runner import process_next, recover_stuck
+from app.modules.payments.service import send_renewal_reminders
 from app.modules.planner.reminders import send_due_reminders
 from app.modules.system.budget import send_budget_alerts
 from app.modules.system.service import record_heartbeat
@@ -54,11 +55,17 @@ async def _budget_alerts() -> None:
         await send_budget_alerts(session)
 
 
+async def _renewal_reminders() -> None:
+    async with SessionLocal() as session:
+        await send_renewal_reminders(session)
+
+
 PERIODIC_TASKS: list[PeriodicTask] = [
     PeriodicTask("heartbeat", 30, _heartbeat),
     PeriodicTask("recover_stuck", 60, _recover_stuck),
     PeriodicTask("study_reminders", 60, _study_reminders),
     PeriodicTask("budget_alerts", 600, _budget_alerts),
+    PeriodicTask("renewal_reminders", 3600, _renewal_reminders),
 ]
 
 

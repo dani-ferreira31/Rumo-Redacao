@@ -2,9 +2,10 @@ import logging
 import time
 import uuid
 
-from fastapi import APIRouter, FastAPI, Request
+from fastapi import APIRouter, Depends, FastAPI, Request
 
 from app.core.config import get_settings
+from app.core.deps import require_access
 from app.core.errors import register_error_handlers
 from app.core.health import router as health_router
 from app.core.logging import bind_log_context, clear_log_context, configure_logging
@@ -15,6 +16,7 @@ from app.modules.auth.router import router as auth_router
 from app.modules.contests.router import router as contests_router
 from app.modules.essays.router import router as essays_router
 from app.modules.invites.router import router as invites_router
+from app.modules.payments.router import router as payments_router
 from app.modules.planner.router import router as planner_router
 from app.modules.questions.router import router as questions_router
 from app.modules.stats.router import router as stats_router
@@ -61,13 +63,16 @@ def create_app() -> FastAPI:
     api.include_router(auth_router)
     api.include_router(invites_router)
     api.include_router(users_router)
-    api.include_router(essays_router)
-    api.include_router(questions_router)
-    api.include_router(planner_router)
+    # sem assinatura em dia (quem se cadastrou sem convite), estes módulos respondem 402
+    paid = [Depends(require_access)]
+    api.include_router(essays_router, dependencies=paid)
+    api.include_router(questions_router, dependencies=paid)
+    api.include_router(planner_router, dependencies=paid)
+    api.include_router(payments_router)
     api.include_router(admin_router)
-    api.include_router(contests_router)
-    api.include_router(assessments_router)
-    api.include_router(stats_router)
+    api.include_router(contests_router, dependencies=paid)
+    api.include_router(assessments_router, dependencies=paid)
+    api.include_router(stats_router, dependencies=paid)
     api.include_router(system_router)
     app.include_router(api)
     # Também na raiz, para healthcheck do container/proxy.

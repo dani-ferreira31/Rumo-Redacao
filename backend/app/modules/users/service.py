@@ -102,6 +102,10 @@ async def admin_update_user(
     elif data.disabled is False and user.disabled_at is not None:
         user.disabled_at = None
         log_event(session, "user", f"Conta de {ROLE_LABEL[user.role]} reativada")
+    if data.free_access is not None and data.free_access != user.free_access:
+        user.free_access = data.free_access
+        word = "liberado sem assinatura" if data.free_access else "voltou a exigir assinatura"
+        log_event(session, "user", f"Acesso de {ROLE_LABEL[user.role]} {word}")
     await session.commit()
     await session.refresh(user)
     return user

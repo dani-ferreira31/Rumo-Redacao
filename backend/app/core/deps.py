@@ -60,6 +60,21 @@ async def require_teacher(user: User = Depends(get_current_user)) -> User:
     return user
 
 
+async def require_access(
+    user: User = Depends(get_current_user), session: AsyncSession = Depends(get_session)
+) -> User:
+    """Quem se cadastrou sem convite precisa estar com a assinatura em dia."""
+    from app.modules.payments.access import has_access
+
+    if not await has_access(session, user):
+        raise AppError(
+            "payment_required",
+            "Sua assinatura não está ativa. Assine para continuar usando a plataforma.",
+            402,
+        )
+    return user
+
+
 def require_feature(name: str):
     """Bloqueia a rota quando o módulo está desligado no painel (o admin sempre passa)."""
     from app.modules.system.settings import FEATURES, feature_enabled

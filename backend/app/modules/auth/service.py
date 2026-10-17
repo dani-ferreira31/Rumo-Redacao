@@ -9,7 +9,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import get_settings
-from app.core.enums import EmailTokenPurpose
+from app.core.enums import EmailTokenPurpose, UserRole
 from app.core.errors import AppError
 from app.core.security import (
     create_access_token,
@@ -23,6 +23,7 @@ from app.email.service import queue_email
 from app.modules.auth.models import EmailToken, RefreshToken
 from app.modules.auth.schemas import RegisterIn
 from app.modules.invites.service import claim as claim_invite
+from app.modules.payments.service import public_billing
 from app.modules.system.settings import feature_enabled
 from app.modules.users.models import User
 
@@ -91,8 +92,19 @@ async def register(session: AsyncSession, data: RegisterIn, user_agent: str | No
             "Menores de 18 anos precisam do consentimento do responsável.",
             422,
         )
-    # o convite vem antes: sem um válido, não dá para descobrir quais e-mails já existem
-    invite = await claim_invite(session, data.invite_code)
+    # Com convite: papel do convite e acesso livre. Sem convite: aluno, e só se o
+    # cadastro pago estiver aberto (a conta entra, mas precisa assinar).
+    # O convite vem antes: sem um válido, não dá para descobrir quais e-mails já existem.
+    if data.invite_code:
+        invite = await claim_invite(session, data.invite_code)
+    else:
+        invite = None
+        if not (await public_billing(session)).enabled:
+            raise AppError(
+                "invite_required",
+                "O cadastro é feito por convite. Peça o link a quem administra a plataforma.",
+                403,
+            )
     if await session.scalar(select(User.id).where(User.email == email)):
         raise AppError("email_already_registered", "Este e-mail já está cadastrado.", 409)
 
@@ -100,8 +112,9 @@ async def register(session: AsyncSession, data: RegisterIn, user_agent: str | No
         name=data.name,
         email=email,
         password_hash=hash_password(data.password),
-        role=invite.role,
-        invite_id=invite.id,
+        role=invite.role if invite else UserRole.student,
+        invite_id=invite.id if invite else None,
+        free_access=invite is not None,
         birth_date=data.birth_date,
         guardian_consent_at=utcnow() if is_minor else None,
     )

@@ -679,6 +679,141 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/billing": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Billing Info
+         * @description Público: se o cadastro pago está aberto, o preço e se há doações.
+         */
+        get: operations["billing_info_api_v1_billing_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/subscription": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** My Subscription */
+        get: operations["my_subscription_api_v1_me_subscription_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/payments/checkout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Checkout
+         * @description Cria a cobrança e devolve o link da página de pagamento do Mercado Pago.
+         */
+        post: operations["checkout_api_v1_payments_checkout_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/payments/{payment_id}/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Refresh Payment
+         * @description Na volta do Mercado Pago: confere o pagamento direto na API.
+         */
+        post: operations["refresh_payment_api_v1_payments__payment_id__refresh_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/payments/webhook/mercadopago": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Mercadopago Webhook
+         * @description Notificação do Mercado Pago. O pagamento é sempre reconsultado na API.
+         */
+        post: operations["mercadopago_webhook_api_v1_payments_webhook_mercadopago_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/payments/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Billing Settings */
+        get: operations["get_billing_settings_api_v1_admin_payments_settings_get"];
+        /** Put Billing Settings */
+        put: operations["put_billing_settings_api_v1_admin_payments_settings_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/payments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Payments
+         * @description Receita do mês e os últimos pagamentos (com nome e e-mail de quem pagou).
+         */
+        get: operations["list_payments_api_v1_admin_payments_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/questions": {
         parameters: {
             query?: never;
@@ -1503,6 +1638,37 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AdminPaymentOut */
+        AdminPaymentOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            kind: components["schemas"]["PaymentKind"];
+            status: components["schemas"]["PaymentStatus"];
+            /** Amount */
+            amount: string;
+            /** Method */
+            method: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Paid At */
+            paid_at: string | null;
+            /** User Name */
+            user_name: string | null;
+            /** User Email */
+            user_email: string | null;
+        };
+        /** AdminPaymentsOut */
+        AdminPaymentsOut: {
+            summary: components["schemas"]["PaymentSummary"];
+            /** Payments */
+            payments: components["schemas"]["AdminPaymentOut"][];
+        };
         /** AdminQuestionOut */
         AdminQuestionOut: {
             /** Id */
@@ -1625,6 +1791,10 @@ export interface components {
             email_verified_at: string | null;
             /** Disabled At */
             disabled_at: string | null;
+            /** Free Access */
+            free_access: boolean;
+            /** Paid Until */
+            paid_until: string | null;
             /**
              * Created At
              * Format: date-time
@@ -1646,6 +1816,11 @@ export interface components {
             role?: ("student" | "teacher") | null;
             /** Disabled */
             disabled?: boolean | null;
+            /**
+             * Free Access
+             * @description Cortesia: usa sem assinatura
+             */
+            free_access?: boolean | null;
         };
         /** Alert */
         Alert: {
@@ -1930,6 +2105,59 @@ export interface components {
                 [key: string]: "A" | "B" | "C" | "D" | "E";
             };
         };
+        /** BillingAdminOut */
+        BillingAdminOut: {
+            /** Enabled */
+            enabled: boolean;
+            /** Price Brl */
+            price_brl: number;
+            /** Period Days */
+            period_days: number;
+            /** Donations Enabled */
+            donations_enabled: boolean;
+            /** Mercadopago Configured */
+            mercadopago_configured: boolean;
+            /** Webhook Secret Configured */
+            webhook_secret_configured: boolean;
+        };
+        /**
+         * BillingPublic
+         * @description O que a tela de cadastro e a de assinatura precisam saber (público).
+         */
+        BillingPublic: {
+            /**
+             * Enabled
+             * @description Cadastro aberto com assinatura
+             */
+            enabled: boolean;
+            /** Price Brl */
+            price_brl: number;
+            /** Period Days */
+            period_days: number;
+            /** Donations Enabled */
+            donations_enabled: boolean;
+            /**
+             * Donation Min
+             * @default 2
+             */
+            donation_min: number;
+            /**
+             * Donation Max
+             * @default 1000
+             */
+            donation_max: number;
+        };
+        /** BillingSettings */
+        BillingSettings: {
+            /** Enabled */
+            enabled: boolean;
+            /** Price Brl */
+            price_brl: number;
+            /** Period Days */
+            period_days: number;
+            /** Donations Enabled */
+            donations_enabled: boolean;
+        };
         /** BlockIn */
         BlockIn: {
             /**
@@ -2113,6 +2341,25 @@ export interface components {
             level: "ok" | "warning" | "error";
             /** Detail */
             detail: string;
+        };
+        /** CheckoutIn */
+        CheckoutIn: {
+            kind: components["schemas"]["PaymentKind"];
+            /**
+             * Amount
+             * @description Só nas doações: valor em reais escolhido pelo usuário
+             */
+            amount?: number | string | null;
+        };
+        /** CheckoutOut */
+        CheckoutOut: {
+            /**
+             * Payment Id
+             * Format: uuid
+             */
+            payment_id: string;
+            /** Checkout Url */
+            checkout_url: string;
         };
         /** CompetencyOut */
         CompetencyOut: {
@@ -2831,6 +3078,49 @@ export interface components {
             /** Alerts */
             alerts: components["schemas"]["Alert"][];
         };
+        /**
+         * PaymentKind
+         * @enum {string}
+         */
+        PaymentKind: "subscription" | "donation";
+        /** PaymentOut */
+        PaymentOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            kind: components["schemas"]["PaymentKind"];
+            status: components["schemas"]["PaymentStatus"];
+            /** Amount */
+            amount: string;
+            /** Method */
+            method: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Paid At */
+            paid_at: string | null;
+        };
+        /**
+         * PaymentStatus
+         * @description Espelha os status do Mercado Pago que importam para o app.
+         * @enum {string}
+         */
+        PaymentStatus: "pending" | "approved" | "rejected" | "cancelled" | "refunded";
+        /** PaymentSummary */
+        PaymentSummary: {
+            /** Month Subscriptions Brl */
+            month_subscriptions_brl: string;
+            /** Month Donations Brl */
+            month_donations_brl: string;
+            /** Active Subscribers */
+            active_subscribers: number;
+            /** Pending */
+            pending: number;
+        };
         /** PlanIn */
         PlanIn: {
             /** Name */
@@ -3289,9 +3579,9 @@ export interface components {
         RegisterIn: {
             /**
              * Invite Code
-             * @description Código do link de convite
+             * @description Código do link de convite. Sem convite, a conta precisa de assinatura.
              */
-            invite_code: string;
+            invite_code?: string | null;
             /** Name */
             name: string;
             /**
@@ -3453,6 +3743,21 @@ export interface components {
             id: number;
             /** Name */
             name: string;
+        };
+        /** SubscriptionOut */
+        SubscriptionOut: {
+            /** Active */
+            active: boolean;
+            /** Free Access */
+            free_access: boolean;
+            /** Paid Until */
+            paid_until: string | null;
+            /** Price Brl */
+            price_brl: number;
+            /** Period Days */
+            period_days: number;
+            /** Payments */
+            payments: components["schemas"]["PaymentOut"][];
         };
         /** TaskIn */
         TaskIn: {
@@ -3667,6 +3972,18 @@ export interface components {
              * Format: date-time
              */
             created_at: string;
+            /**
+             * Free Access
+             * @default true
+             */
+            free_access: boolean;
+            /** Paid Until */
+            paid_until?: string | null;
+            /**
+             * Access Active
+             * @default true
+             */
+            access_active: boolean;
             /** Email Verified */
             readonly email_verified: boolean;
         };
@@ -5064,6 +5381,215 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    billing_info_api_v1_billing_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingPublic"];
+                };
+            };
+        };
+    };
+    my_subscription_api_v1_me_subscription_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SubscriptionOut"];
+                };
+            };
+        };
+    };
+    checkout_api_v1_payments_checkout_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CheckoutIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CheckoutOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    refresh_payment_api_v1_payments__payment_id__refresh_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                payment_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    mercadopago_webhook_api_v1_payments_webhook_mercadopago_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "x-signature"?: string | null;
+                "x-request-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_billing_settings_api_v1_admin_payments_settings_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingAdminOut"];
+                };
+            };
+        };
+    };
+    put_billing_settings_api_v1_admin_payments_settings_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BillingSettings"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingAdminOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_payments_api_v1_admin_payments_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminPaymentsOut"];
                 };
             };
         };

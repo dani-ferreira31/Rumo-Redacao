@@ -20,6 +20,7 @@ from app.modules.essays.models import (
     EssayTheme,
 )
 from app.modules.invites.models import Invite
+from app.modules.payments.models import Payment
 from app.modules.planner.models import StudyBlock, StudyPlan, StudySession
 from app.modules.questions.models import (
     Exam,
@@ -62,6 +63,7 @@ __all__ = [
     "Invite",
     "Job",
     "KnowledgeArea",
+    "Payment",
     "PracticeSession",
     "Question",
     "QuestionAsset",

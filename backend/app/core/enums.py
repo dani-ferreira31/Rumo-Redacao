@@ -81,6 +81,21 @@ class ContestExamStatus(StrEnum):
     failed = "failed"
 
 
+class PaymentKind(StrEnum):
+    subscription = "subscription"
+    donation = "donation"
+
+
+class PaymentStatus(StrEnum):
+    """Espelha os status do Mercado Pago que importam para o app."""
+
+    pending = "pending"  # cobrança criada, aluno ainda não pagou (ou PIX aguardando)
+    approved = "approved"
+    rejected = "rejected"
+    cancelled = "cancelled"
+    refunded = "refunded"
+
+
 class JobStatus(StrEnum):
     pending = "pending"
     running = "running"

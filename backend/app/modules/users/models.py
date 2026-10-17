@@ -27,6 +27,10 @@ class User(Base):
     timezone: Mapped[str] = mapped_column(Text, server_default=text("'America/Sao_Paulo'"))
     target_exam_year: Mapped[int | None] = mapped_column(SmallInteger)
     email_reminders_enabled: Mapped[bool] = mapped_column(Boolean, server_default=text("true"))
+    # Acesso sem pagamento: quem entrou por convite, contas antigas e cortesias do admin.
+    free_access: Mapped[bool] = mapped_column(Boolean, server_default=text("false"))
+    # Fim do período pago (assinatura); só vale para quem não tem free_access.
+    paid_until: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     # Conta bloqueada pelo admin: não entra nem renova a sessão.
     disabled_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     invite_id: Mapped[uuid.UUID | None] = mapped_column(

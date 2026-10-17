@@ -47,6 +47,14 @@ DEFAULTS: dict[str, Any] = {
             "rpd": 1000,
         }
     ],
+    # Assinatura paga para quem se cadastra sem convite (Mercado Pago). Desligada,
+    # o cadastro volta a ser só por convite.
+    "billing": {
+        "enabled": False,
+        "price_brl": 10.0,
+        "period_days": 30,
+        "donations_enabled": True,
+    },
     "worker_heartbeat": None,
 }
 

@@ -21,6 +21,10 @@ class UserOut(BaseModel):
     target_exam_year: int | None
     email_reminders_enabled: bool
     created_at: datetime
+    free_access: bool = True
+    paid_until: datetime | None = None
+    # False = precisa assinar (cadastro sem convite com a assinatura vencida)
+    access_active: bool = True
 
     @computed_field
     @property
@@ -74,6 +78,8 @@ class AdminUserOut(BaseModel):
     role: UserRole
     email_verified_at: datetime | None
     disabled_at: datetime | None
+    free_access: bool
+    paid_until: datetime | None
     created_at: datetime
 
 
@@ -86,3 +92,4 @@ class AdminUserPage(BaseModel):
 class AdminUserUpdate(BaseModel):
     role: Literal[UserRole.student, UserRole.teacher] | None = None
     disabled: bool | None = None
+    free_access: bool | None = Field(default=None, description="Cortesia: usa sem assinatura")

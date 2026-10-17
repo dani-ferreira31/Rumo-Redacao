@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% from "_button.html" import button %}
+{% block content %}
+<p>Olá, {{ name }}!</p>
+<p>Sua assinatura do Rumo1000 vence em <strong>{{ until }}</strong>. Para continuar corrigindo redações e praticando questões, renove por R$ {{ price }} (PIX ou cartão).</p>
+{{ button(url, "Renovar assinatura") }}
+{% endblock %}

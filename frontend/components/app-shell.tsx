@@ -1,13 +1,16 @@
 "use client";
 
+import { Heart } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 import { NAV_ITEMS } from "@/components/nav-items";
 import { Alert } from "@/components/ui";
+import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { ROUTE_FEATURES, isEnabled, useFeatures } from "@/lib/features";
+import { UNPAID_ALLOWED } from "@/lib/payments";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -17,8 +20,19 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const isAdmin = user?.role === "admin";
   const route = ROUTE_FEATURES.find((r) => pathname === r.prefix || pathname.startsWith(`${r.prefix}/`));
   const routeOff = route ? !isEnabled(features, route.features) : false;
+  const router = useRouter();
+  const [donations, setDonations] = useState(false);
+  useEffect(() => {
+    api.GET("/api/v1/billing").then(({ data }) => setDonations(Boolean(data?.donations_enabled)));
+  }, []);
+  // sem assinatura em dia, só as páginas de assinatura, doação e perfil
+  const unpaid = user?.access_active === false;
+  const blocked = unpaid && !UNPAID_ALLOWED.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+  useEffect(() => {
+    if (blocked) router.replace("/assinatura");
+  }, [blocked, router]);
 
-  const links = NAV_ITEMS.filter((item) => isAdmin || isEnabled(features, item.features)).map((item) => {
+  const links = NAV_ITEMS.filter((item) => !unpaid && (isAdmin || isEnabled(features, item.features))).map((item) => {
     const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
     return (
       <Link
@@ -83,6 +97,29 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 Admin
               </Link>
             ) : null}
+            {user && !user.free_access && user.role === "student" ? (
+              <Link
+                href="/assinatura"
+                onClick={() => setOpen(false)}
+                className={`mt-1 block rounded-md px-3 py-2 text-sm font-medium ${
+                  pathname.startsWith("/assinatura") ? "bg-indigo-600 text-white" : "text-slate-700 hover:bg-slate-200"
+                }`}
+              >
+                Assinatura
+              </Link>
+            ) : null}
+            {donations ? (
+            <Link
+              href="/apoiar"
+              onClick={() => setOpen(false)}
+              className={`mt-1 flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium ${
+                pathname.startsWith("/apoiar") ? "bg-indigo-600 text-white" : "text-rose-700 hover:bg-rose-50"
+              }`}
+            >
+              <Heart aria-hidden className="h-4 w-4" />
+              Apoiar o projeto
+            </Link>
+            ) : null}
             <Link
               href="/perfil"
               onClick={() => setOpen(false)}
@@ -104,7 +141,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </nav>
       </aside>
       <main className="min-w-0 flex-1 px-4 py-6 md:px-8">
-        {routeOff && !isAdmin ? (
+        {blocked ? null : routeOff && !isAdmin ? (
           <Alert kind="info">{route?.label} está temporariamente indisponível. Volte mais tarde.</Alert>
         ) : (
           <>

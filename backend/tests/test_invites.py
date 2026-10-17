@@ -33,7 +33,10 @@ async def _create_invite(client, admin_h, **body):
 async def test_cadastro_sem_convite_ou_com_convite_invalido(client):
     payload = register_payload()
     del payload["invite_code"]
-    assert (await client.post("/api/v1/auth/register", json=payload)).status_code == 422
+    resp = await client.post("/api/v1/auth/register", json=payload)
+    # com o cadastro pago desligado (padrão), sem convite não entra
+    assert resp.status_code == 403
+    assert resp.json()["error"]["code"] == "invite_required"
 
     resp = await client.post("/api/v1/auth/register", json=register_payload(invite_code="xpto"))
     assert resp.status_code == 403

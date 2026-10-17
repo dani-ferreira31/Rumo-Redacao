@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% from "_button.html" import button %}
+{% block content %}
+<p>Olá, {{ name }}!</p>
+<p>Recebemos a sua doação de <strong>R$ {{ amount }}</strong>. Muito obrigado! Ela ajuda a manter o Rumo1000 no ar e a correção de redações funcionando para todos.</p>
+{{ button(url, "Voltar ao Rumo1000") }}
+{% endblock %}

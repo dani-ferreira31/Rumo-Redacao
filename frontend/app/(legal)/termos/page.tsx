@@ -36,7 +36,10 @@ export default function TermsPage() {
 
       <h2>3. Conta e idade</h2>
       <ul>
-        <li>O cadastro é feito apenas por convite, que define se a conta é de aluno ou de professor.</li>
+        <li>
+          A conta pode ser criada por convite (de aluno ou de professor, sem custo) ou pelo cadastro
+          aberto, que exige assinatura.
+        </li>
         <li>Você deve informar dados verdadeiros e manter sua senha em sigilo.</li>
         <li>Podemos desativar contas que violem estes Termos.</li>
         <li>
@@ -46,14 +49,37 @@ export default function TermsPage() {
         <li>Você pode excluir sua conta a qualquer momento pela página de Perfil.</li>
       </ul>
 
-      <h2>4. Uso adequado</h2>
+      <h2>4. Assinatura e doações</h2>
+      <ul>
+        <li>
+          Quem se cadastra sem convite paga uma assinatura pelo período informado na página de
+          assinatura (por exemplo, R$ 10,00 por 30 dias). O pagamento é feito pelo Mercado Pago,
+          com PIX ou cartão, e <strong>não renova sozinho</strong>: avisamos por e-mail perto do
+          vencimento.
+        </li>
+        <li>
+          Sem assinatura em dia, a conta continua existindo, mas a correção de redações, o banco
+          de questões e o cronograma ficam bloqueados até um novo pagamento. Seus dados não são
+          apagados.
+        </li>
+        <li>
+          Você pode desistir da compra em até 7 (sete) dias após o pagamento e receber o valor de
+          volta (art. 49 do Código de Defesa do Consumidor), pelo e-mail [E-MAIL DE CONTATO].
+        </li>
+        <li>
+          Doações são voluntárias, de valor escolhido por você, e não dão acesso extra nem
+          vantagens na Plataforma.
+        </li>
+      </ul>
+
+      <h2>5. Uso adequado</h2>
       <p>
         É proibido usar a Plataforma para fins ilícitos, tentar acessar dados de outros usuários,
         sobrecarregar ou atacar os sistemas, ou enviar conteúdo ofensivo, que viole direitos de
         terceiros ou que não seja de sua autoria quando isso for exigido.
       </p>
 
-      <h2>5. Conteúdo</h2>
+      <h2>6. Conteúdo</h2>
       <p>
         As redações que você envia continuam sendo suas. Você nos autoriza a processá-las apenas para
         prestar o serviço. As questões do ENEM são de domínio público do INEP; textos de terceiros
@@ -61,14 +87,14 @@ export default function TermsPage() {
         COM ADVOGADO: direitos autorais dos textos-base das questões.]
       </p>
 
-      <h2>6. Disponibilidade e responsabilidade</h2>
+      <h2>7. Disponibilidade e responsabilidade</h2>
       <p>
         Fazemos o possível para manter a Plataforma no ar, mas ela pode passar por interrupções. Na
         medida permitida em lei, não nos responsabilizamos por decisões tomadas com base nas
         correções ou estatísticas da Plataforma.
       </p>
 
-      <h2>7. Alterações e contato</h2>
+      <h2>8. Alterações e contato</h2>
       <p>
         Podemos atualizar estes Termos; mudanças relevantes serão comunicadas por e-mail ou na
         Plataforma. Dúvidas: [E-MAIL DE CONTATO]. Foro: [COMARCA].

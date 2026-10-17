@@ -17,7 +17,12 @@ def _check_password(v: str) -> str:
 
 
 class RegisterIn(BaseModel):
-    invite_code: str = Field(min_length=1, max_length=100, description="Código do link de convite")
+    invite_code: str | None = Field(
+        default=None,
+        min_length=1,
+        max_length=100,
+        description="Código do link de convite. Sem convite, a conta precisa de assinatura.",
+    )
     name: str = Field(min_length=1, max_length=120)
     email: EmailStr
     password: str

@@ -19,12 +19,14 @@ export default function PrivacyPage() {
         <li><strong>Preferências:</strong> fuso horário, ano previsto do ENEM e opção de lembretes;</li>
         <li><strong>Redações:</strong> fotos enviadas, transcrições, textos e resultados das correções;</li>
         <li><strong>Estudo:</strong> respostas às questões, favoritos, sessões de prática e cronogramas;</li>
+        <li><strong>Pagamentos:</strong> valor, data, forma de pagamento (PIX ou cartão) e situação das assinaturas e doações. Não recebemos nem guardamos o número do cartão: os dados de pagamento são digitados na página do Mercado Pago;</li>
         <li><strong>Técnicos:</strong> registros de acesso (IP, navegador e horário) para segurança.</li>
       </ul>
 
       <h2>2. Para que usamos</h2>
       <ul>
         <li>Prestar o serviço: transcrever e corrigir redações, mostrar estatísticas e enviar lembretes (execução de contrato);</li>
+        <li>Cobrar a assinatura, registrar doações e cumprir obrigações fiscais (execução de contrato e obrigação legal);</li>
         <li>Enviar e-mails de conta, como verificação e redefinição de senha;</li>
         <li>Segurança e prevenção de abuso (legítimo interesse);</li>
         <li>Medir e melhorar a qualidade da correção usando dados agregados. [REVISAR: base legal]</li>
@@ -42,6 +44,11 @@ export default function PrivacyPage() {
           Gemini, o Google pode usar o conteúdo enviado para melhorar seus produtos, inclusive com
           revisão humana; no plano pago, não.]
         </li>
+        <li>
+          <strong>Mercado Pago (pagamentos):</strong> nome e e-mail de quem assina ou doa, e o
+          valor da cobrança, para processar o pagamento. Os dados do cartão ou da conta usados no
+          pagamento ficam com o Mercado Pago, sob a política de privacidade dele.
+        </li>
         <li><strong>Resend (e-mail):</strong> seu e-mail e o conteúdo das mensagens transacionais e dos lembretes.</li>
         <li><strong>Hospedagem:</strong> servidor próprio em [PROVEDOR/LOCALIZAÇÃO DA VPS].</li>
       </ul>
@@ -53,8 +60,9 @@ export default function PrivacyPage() {
           professores.
         </li>
         <li>
-          <strong>Administradores:</strong> veem nome, e-mail, tipo de conta e data de cadastro, para
-          controlar o acesso. Não veem suas redações nem suas respostas.
+          <strong>Administradores:</strong> veem nome, e-mail, tipo de conta, data de cadastro e os
+          pagamentos (valor, data e situação), para controlar o acesso. Não veem suas redações nem
+          suas respostas.
         </li>
       </ul>
       <p>Não vendemos seus dados nem os usamos para publicidade.</p>

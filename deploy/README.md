@@ -98,6 +98,20 @@ Depois configure o Cloudflare e o NPM (seção 3.1) e teste: `curl https://rumo.
 
 Alternativa ao certificado de origem: no passo 1 do NPM, use *Let's Encrypt* com **DNS Challenge** do Cloudflare (token de API com permissão `Zone:DNS:Edit`). O desafio HTTP não funciona bem atrás do proxy do Cloudflare.
 
+## 3.2 Pagamentos (Mercado Pago)
+
+Assinatura para quem se cadastra sem convite e doações de qualquer usuário. Quem entra por convite não paga.
+
+1. Em [mercadopago.com.br/developers](https://www.mercadopago.com.br/developers) → **Suas integrações** → sua aplicação → **Credenciais de produção**, copie o **Access Token** (`APP_USR-...`) para `MERCADOPAGO_ACCESS_TOKEN` no `.env.prod`. Para testar antes, use as credenciais de teste (`TEST-...`) e os cartões de teste do Mercado Pago.
+2. Na mesma aplicação → **Webhooks** → **Configurar notificações**:
+   - URL de produção: `https://rumo.4bsistemas.com.br/api/v1/payments/webhook/mercadopago`
+   - Evento: **Pagamentos**
+   - Salve e copie a **assinatura secreta** para `MERCADOPAGO_WEBHOOK_SECRET`.
+3. Aplique: `dc up -d backend worker` (o `.env.prod` só é lido na subida dos containers).
+4. No app: **Admin → Pagamentos** liga o cadastro aberto com assinatura, define o preço e os dias de acesso, e liga as doações.
+
+O pagamento é sempre reconsultado na API do Mercado Pago: a notificação só avisa que algo mudou. Sem o webhook, a confirmação acontece quando o aluno volta ao site depois de pagar.
+
 ## 4. Dados iniciais
 
 ```bash

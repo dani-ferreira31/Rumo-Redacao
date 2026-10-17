@@ -42,49 +42,58 @@ type FormData = z.output<typeof schema>;
 
 const ROLE_LABEL: Record<string, string> = { student: "aluno", teacher: "professor" };
 
-/** O cadastro só existe por convite: o link traz `?convite=<código>`. */
+const brl = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
+type Billing = { enabled: boolean; price_brl: number; period_days: number };
+
+/** Com `?convite=<código>`: conta de aluno ou professor, sem pagamento. Sem convite: só
+ * se o cadastro pago estiver aberto (a conta é criada e o aluno assina em seguida). */
 export function RegisterForm() {
   const code = useSearchParams().get("convite")?.trim() ?? "";
   const [invite, setInvite] = useState<{ role: string } | "invalid" | null>(null);
+  const [billing, setBilling] = useState<Billing | null>(null);
 
   useEffect(() => {
-    if (!code) return;
-    api
-      .GET("/api/v1/invites/{code}", { params: { path: { code } } })
-      .then(({ data }) => setInvite(data ?? "invalid"));
+    if (code) {
+      api
+        .GET("/api/v1/invites/{code}", { params: { path: { code } } })
+        .then(({ data }) => setInvite(data ?? "invalid"));
+    } else {
+      api.GET("/api/v1/billing").then(({ data }) => setBilling(data ?? { enabled: false, price_brl: 0, period_days: 0 }));
+    }
   }, [code]);
 
-  if (!code || invite === "invalid") {
-    return (
-      <GuestOnly>
-        <Card>
-          <h1 className="mb-2 text-xl font-semibold">Cadastro por convite</h1>
-          {code ? (
-            <Alert>
-              Este convite não é válido: pode ter expirado, sido revogado ou atingido o limite de
-              usos. Peça um link novo a quem te convidou.
-            </Alert>
-          ) : (
-            <p className="text-sm text-slate-600">
-              O Rumo1000 é fechado: para criar uma conta você precisa do link de convite enviado
-              pela escola ou pelo professor. Abra o link que você recebeu.
-            </p>
-          )}
-          <p className="mt-4 text-center text-sm">
-            Já tem conta?{" "}
-            <Link href="/entrar" className="text-indigo-700 hover:underline">
-              Entrar
-            </Link>
+  if (code && invite && invite !== "invalid") return <SignupForm code={code} role={invite.role} />;
+  if (!code && billing?.enabled) return <SignupForm code={null} role="student" billing={billing} />;
+  if ((code && !invite) || (!code && !billing)) return <Spinner label="Carregando..." />;
+
+  return (
+    <GuestOnly>
+      <Card>
+        <h1 className="mb-2 text-xl font-semibold">Cadastro por convite</h1>
+        {code ? (
+          <Alert>
+            Este convite não é válido: pode ter expirado, sido revogado ou atingido o limite de
+            usos. Peça um link novo a quem te convidou.
+          </Alert>
+        ) : (
+          <p className="text-sm text-slate-600">
+            Para criar uma conta você precisa do link de convite enviado pela escola ou pelo
+            professor. Abra o link que você recebeu.
           </p>
-        </Card>
-      </GuestOnly>
-    );
-  }
-  if (!invite) return <Spinner label="Conferindo o convite..." />;
-  return <SignupForm code={code} role={invite.role} />;
+        )}
+        <p className="mt-4 text-center text-sm">
+          Já tem conta?{" "}
+          <Link href="/entrar" className="text-indigo-700 hover:underline">
+            Entrar
+          </Link>
+        </p>
+      </Card>
+    </GuestOnly>
+  );
 }
 
-function SignupForm({ code, role }: { code: string; role: string }) {
+function SignupForm({ code, role, billing }: { code: string | null; role: string; billing?: Billing }) {
   const { startSession } = useAuth();
   const [error, setError] = useState<string | null>(null);
   const {
@@ -105,7 +114,7 @@ function SignupForm({ code, role }: { code: string; role: string }) {
     setError(null);
     const { data, error: apiError } = await api.POST("/api/v1/auth/register", {
       body: {
-        invite_code: code,
+        invite_code: code ?? undefined,
         name: values.name,
         email: values.email,
         password: values.password,
@@ -134,7 +143,17 @@ function SignupForm({ code, role }: { code: string; role: string }) {
       <Card>
         <h1 className="mb-1 text-xl font-semibold">Criar conta</h1>
         <p className="mb-4 text-sm text-slate-600">
-          Você foi convidado como <strong>{ROLE_LABEL[role] ?? role}</strong>.
+          {code ? (
+            <>
+              Você foi convidado como <strong>{ROLE_LABEL[role] ?? role}</strong>.
+            </>
+          ) : billing ? (
+            <>
+              Depois de criar a conta, você assina por{" "}
+              <strong>{brl(billing.price_brl)}</strong> ({billing.period_days} dias de acesso),
+              com PIX ou cartão.
+            </>
+          ) : null}
         </p>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
           {error ? <Alert>{error}</Alert> : null}

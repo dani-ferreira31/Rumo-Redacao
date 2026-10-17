@@ -43,6 +43,11 @@ class Settings(BaseSettings):
     resend_api_key: str = ""
     email_from: str = "Rumo1000 <nao-responda@seudominio.com.br>"
 
+    # Mercado Pago (assinatura e doações). Sem token, o pagamento fica indisponível.
+    mercadopago_access_token: str = ""
+    # Chave secreta das notificações (webhook): Suas integrações → Webhooks.
+    mercadopago_webhook_secret: str = ""
+
     storage_driver: Literal["local"] = "local"
     storage_local_path: str = "./storage"
 

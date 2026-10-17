@@ -3,6 +3,7 @@
 import {
   Activity,
   CircleDollarSign,
+  CreditCard,
   Landmark,
   LayoutDashboard,
   Link2,
@@ -31,6 +32,7 @@ const GROUPS = [
     items: [
       { href: "/admin/convites", label: "Convites", icon: Link2 },
       { href: "/admin/usuarios", label: "Usuários", icon: Users },
+      { href: "/admin/pagamentos", label: "Pagamentos", icon: CreditCard },
     ],
   },
   {

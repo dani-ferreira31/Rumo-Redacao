@@ -51,7 +51,10 @@ export function UsersAdmin() {
     }
   }
 
-  async function patch(user: AdminUser, body: { role?: "student" | "teacher"; disabled?: boolean }) {
+  async function patch(
+    user: AdminUser,
+    body: { role?: "student" | "teacher"; disabled?: boolean; free_access?: boolean },
+  ) {
     if (body.disabled && !window.confirm(`Desativar a conta de ${user.name}? A pessoa sai na hora e não consegue mais entrar.`)) {
       return;
     }
@@ -121,6 +124,13 @@ export function UsersAdmin() {
                     </p>
                     <p className="truncate text-xs text-slate-500">
                       {u.email} · desde {dateTime(u.created_at)}
+                      {u.role === "student"
+                        ? u.free_access
+                          ? " · acesso livre"
+                          : u.paid_until && new Date(u.paid_until) > new Date()
+                            ? ` · assinatura até ${dateTime(u.paid_until)}`
+                            : " · sem assinatura"
+                        : ""}
                     </p>
                   </div>
                   {u.role === "admin" ? (
@@ -137,6 +147,17 @@ export function UsersAdmin() {
                         <option value="student">Aluno</option>
                         <option value="teacher">Professor</option>
                       </select>
+                      {u.role === "student" ? (
+                        <label className="flex items-center gap-1.5 text-sm text-slate-700" title="Usa a plataforma sem assinatura">
+                          <input
+                            type="checkbox"
+                            checked={u.free_access}
+                            disabled={busy === u.id}
+                            onChange={(e) => void patch(u, { free_access: e.target.checked })}
+                          />
+                          Acesso livre
+                        </label>
+                      ) : null}
                       <Button
                         variant={u.disabled_at ? "secondary" : "ghost"}
                         disabled={busy === u.id}

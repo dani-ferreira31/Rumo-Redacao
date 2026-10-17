@@ -70,7 +70,7 @@ export function LoginForm() {
             Esqueci minha senha
           </Link>
           <Link href="/cadastro" className="text-indigo-700 hover:underline">
-            Tenho um convite
+            Criar conta
           </Link>
         </div>
       </Card>

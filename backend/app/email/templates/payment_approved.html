@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% from "_button.html" import button %}
+{% block content %}
+<p>Olá, {{ name }}!</p>
+<p>Recebemos o seu pagamento de <strong>R$ {{ amount }}</strong>. Sua assinatura do Rumo1000 está ativa até <strong>{{ until }}</strong>.</p>
+<p>Bons estudos!</p>
+{{ button(url, "Entrar no Rumo1000") }}
+{% endblock %}

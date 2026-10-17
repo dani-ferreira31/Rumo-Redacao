@@ -23,6 +23,7 @@ class FakeMP:
     def __init__(self):
         self.preferences: list[dict] = []
         self.payments: dict[str, mp.MPPayment] = {}
+        self.expired: list[str] = []
 
     async def create_preference(self, body, idempotency_key):
         self.preferences.append(body)
@@ -36,6 +37,12 @@ class FakeMP:
 
     async def search_by_reference(self, reference):
         return [p for p in self.payments.values() if p.external_reference == reference]
+
+    async def expire_preference(self, preference_id):
+        self.expired.append(preference_id)
+
+    async def cancel_payment(self, payment_id):
+        self.payments[payment_id].status = "cancelled"
 
     def pay(self, reference, amount, status="approved", mp_id=None):
         mp_id = mp_id or f"{len(self.payments) + 1000}"
@@ -261,3 +268,34 @@ async def test_lembrete_de_renovacao_uma_vez(client, db, admin_h, fake_mp):
         await db.scalars(select(EmailLog).where(EmailLog.type == "subscription_expiring"))
     ).all()
     assert len(logs) == 1
+
+
+async def test_admin_remove_cobranca_nao_paga(client, db, admin_h, fake_mp):
+    await _open_billing(client, admin_h)
+    h = auth((await register(client, email="tentou@example.com"))["access_token"])
+
+    async def donation():
+        resp = await client.post(
+            "/api/v1/payments/checkout", headers=h, json={"kind": "donation", "amount": "2"}
+        )
+        return resp.json()["payment_id"]
+
+    # 1ª: só abriu a página; 2ª: gerou o PIX e não pagou; 3ª: pagou
+    only_link, pix_open, paid = await donation(), await donation(), await donation()
+    pix_id = fake_mp.pay(pix_open, "2.00", status="pending")
+    fake_mp.pay(paid, "2.00")
+    await client.post(f"/api/v1/payments/{paid}/refresh", headers=h)
+
+    for pid in (only_link, pix_open):
+        resp = await client.delete(f"/api/v1/admin/payments/{pid}", headers=admin_h)
+        assert resp.status_code == 204, resp.text
+        assert await db.get(Payment, uuid.UUID(pid)) is None
+    assert fake_mp.expired == ["pref-1", "pref-2"]
+    assert fake_mp.payments[pix_id].status == "cancelled"
+
+    resp = await client.delete(f"/api/v1/admin/payments/{paid}", headers=admin_h)
+    assert resp.json()["error"]["code"] == "payment_not_removable"
+    student = auth((await register(client, email="outro@example.com"))["access_token"])
+    assert (
+        await client.delete(f"/api/v1/admin/payments/{paid}", headers=student)
+    ).status_code == 403

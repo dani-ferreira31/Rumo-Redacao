@@ -15,6 +15,7 @@ export function PaymentsAdmin() {
   const [days, setDays] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState<string | null>(null);
+  const [removing, setRemoving] = useState<string | null>(null);
 
   useEffect(() => {
     api.GET("/api/v1/admin/payments/settings").then(({ data, error: e }) => {
@@ -25,6 +26,21 @@ export function PaymentsAdmin() {
     });
     api.GET("/api/v1/admin/payments").then(({ data }) => setReport(data ?? null));
   }, []);
+
+  async function remove(id: string, label: string) {
+    if (!window.confirm(`Remover a cobrança de ${label}? O link de pagamento é cancelado no Mercado Pago e a cobrança some do sistema.`)) {
+      return;
+    }
+    setRemoving(id);
+    setError(null);
+    const { error: e } = await api.DELETE("/api/v1/admin/payments/{payment_id}", {
+      params: { path: { payment_id: id } },
+    });
+    setRemoving(null);
+    if (e) setError(errorMessage(e));
+    const { data } = await api.GET("/api/v1/admin/payments");
+    setReport(data ?? null);
+  }
 
   async function save(next: Partial<BillingAdmin>) {
     if (!settings) return;
@@ -124,7 +140,8 @@ export function PaymentsAdmin() {
                       <th className="py-2 pr-3 font-medium">Tipo</th>
                       <th className="py-2 pr-3 text-right font-medium">Valor</th>
                       <th className="py-2 pr-3 font-medium">Situação</th>
-                      <th className="py-2 font-medium">Quando</th>
+                      <th className="py-2 pr-3 font-medium">Quando</th>
+                      <th className="py-2" />
                     </tr>
                   </thead>
                   <tbody>
@@ -142,7 +159,19 @@ export function PaymentsAdmin() {
                             <StatusBadge level={st.level}>{st.label}</StatusBadge>
                             {p.method ? <span className="ml-1 text-xs text-slate-500">{p.method === "bank_transfer" ? "PIX" : p.method}</span> : null}
                           </td>
-                          <td className="py-2 text-slate-600">{dateTime(p.paid_at ?? p.created_at)}</td>
+                          <td className="py-2 pr-3 text-slate-600">{dateTime(p.paid_at ?? p.created_at)}</td>
+                          <td className="py-2 text-right">
+                            {p.status === "approved" || p.status === "refunded" ? null : (
+                              <button
+                                type="button"
+                                disabled={removing === p.id}
+                                onClick={() => void remove(p.id, `${PAYMENT_KIND[p.kind].toLowerCase()} de ${brl(p.amount)}`)}
+                                className="text-sm text-red-700 hover:underline disabled:opacity-50"
+                              >
+                                {removing === p.id ? "Removendo..." : "Remover"}
+                              </button>
+                            )}
+                          </td>
                         </tr>
                       );
                     })}

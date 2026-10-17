@@ -116,3 +116,13 @@ async def list_payments(
 ):
     """Receita do mês e os últimos pagamentos (com nome e e-mail de quem pagou)."""
     return await service.admin_payments(session)
+
+
+@router.delete("/admin/payments/{payment_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def remove_payment(
+    payment_id: uuid.UUID,
+    _: User = Depends(require_admin),
+    session: AsyncSession = Depends(get_session),
+):
+    """Remove uma cobrança não paga (expira o link e cancela o PIX no Mercado Pago)."""
+    await service.admin_remove(session, payment_id)

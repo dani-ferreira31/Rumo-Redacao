@@ -384,3 +384,52 @@ async def admin_payments(session: AsyncSession, limit: int = 100) -> AdminPaymen
             for p, name, email in rows
         ],
     )
+
+
+async def admin_remove(session: AsyncSession, payment_id: uuid.UUID) -> None:
+    """Remove uma cobrança que não foi paga: expira o link e cancela o PIX no Mercado Pago."""
+    payment = await session.get(Payment, payment_id)
+    if payment is None:
+        raise NotFoundError("Pagamento não encontrado.")
+    if payment.status in (PaymentStatus.approved, PaymentStatus.refunded):
+        raise AppError(
+            "payment_not_removable",
+            "Pagamentos aprovados ou estornados ficam no histórico e não podem ser removidos.",
+            409,
+        )
+    if mp.configured():
+        client = mp.get_client()
+        # confere de novo: se foi pago neste meio-tempo, aplica e não remove
+        try:
+            found = await client.search_by_reference(str(payment.id))
+        except mp.MercadoPagoError as exc:
+            raise AppError(
+                "payments_unavailable",
+                "Não foi possível consultar o Mercado Pago agora. Tente de novo.",
+                502,
+            ) from exc
+        paid = [f for f in found if f.status == "approved"]
+        if paid:
+            await _apply(session, payment, paid[0])
+            raise AppError(
+                "payment_not_removable",
+                "Este pagamento acabou de ser aprovado no Mercado Pago e não pode ser removido.",
+                409,
+            )
+        try:
+            if payment.preference_id:
+                await client.expire_preference(payment.preference_id)
+            for item in found:
+                if item.status in ("pending", "in_process"):
+                    await client.cancel_payment(item.id)
+        except mp.MercadoPagoError as exc:
+            if exc.status_code != 404:
+                raise AppError(
+                    "payments_unavailable",
+                    "Não foi possível cancelar no Mercado Pago agora. Tente de novo.",
+                    502,
+                ) from exc
+    kind = "assinatura" if payment.kind == PaymentKind.subscription else "doação"
+    log_event(session, "payment", f"Cobrança não paga removida ({kind}, R$ {_brl(payment.amount)})")
+    await session.delete(payment)
+    await session.commit()

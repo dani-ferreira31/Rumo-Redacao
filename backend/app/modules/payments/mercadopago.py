@@ -9,6 +9,7 @@ import hashlib
 import hmac
 import logging
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from decimal import Decimal
 from typing import Any, Protocol
 
@@ -47,6 +48,8 @@ class Client(Protocol):
     async def create_preference(self, body: dict[str, Any], idempotency_key: str) -> Preference: ...
     async def get_payment(self, payment_id: str) -> MPPayment: ...
     async def search_by_reference(self, reference: str) -> list[MPPayment]: ...
+    async def expire_preference(self, preference_id: str) -> None: ...
+    async def cancel_payment(self, payment_id: str) -> None: ...
 
 
 def _payment(data: dict[str, Any]) -> MPPayment:
@@ -95,6 +98,19 @@ class HttpClient:
             },
         )
         return [_payment(p) for p in data.get("results", [])]
+
+    async def expire_preference(self, preference_id: str) -> None:
+        """Faz o link de pagamento parar de aceitar pagamentos."""
+        now = datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%S.000-00:00")
+        await self._request(
+            "PUT",
+            f"/checkout/preferences/{preference_id}",
+            json={"expires": True, "expiration_date_to": now},
+        )
+
+    async def cancel_payment(self, payment_id: str) -> None:
+        """Cancela um pagamento ainda não pago (ex.: PIX gerado e não pago)."""
+        await self._request("PUT", f"/v1/payments/{payment_id}", json={"status": "cancelled"})
 
 
 _client: Client | None = None

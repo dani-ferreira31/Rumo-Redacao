@@ -82,6 +82,9 @@ async def mercadopago_webhook(
     try:
         await service.handle_notification(session, data_id)
     except mp.MercadoPagoError as exc:
+        if exc.status_code == 404:
+            # pagamento que não existe nesta conta (ex.: "Simular notificação" do painel)
+            return Response(status_code=status.HTTP_200_OK)
         # 5xx: o Mercado Pago reenvia a notificação mais tarde
         logger.warning("mercadopago_webhook_failed", extra={"extra_fields": {"error": str(exc)}})
         raise AppError("payments_unavailable", "Falha ao consultar o pagamento.", 502) from exc

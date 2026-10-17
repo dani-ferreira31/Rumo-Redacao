@@ -23,7 +23,9 @@ TIMEOUT = 20.0
 
 
 class MercadoPagoError(Exception):
-    pass
+    def __init__(self, message: str, status_code: int | None = None):
+        super().__init__(message)
+        self.status_code = status_code
 
 
 @dataclass
@@ -67,7 +69,7 @@ class HttpClient:
             resp = await http.request(method, path, headers=headers, **kwargs)
         if resp.status_code >= 400:
             # o corpo traz a mensagem do Mercado Pago, nunca o token
-            raise MercadoPagoError(f"{resp.status_code}: {resp.text[:300]}")
+            raise MercadoPagoError(f"{resp.status_code}: {resp.text[:300]}", resp.status_code)
         return resp.json()
 
     async def create_preference(self, body: dict[str, Any], idempotency_key: str) -> Preference:

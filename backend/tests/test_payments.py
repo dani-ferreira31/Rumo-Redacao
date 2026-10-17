@@ -30,6 +30,8 @@ class FakeMP:
         return mp.Preference(id=f"pref-{n}", checkout_url=f"https://mp.test/checkout/{n}")
 
     async def get_payment(self, payment_id):
+        if payment_id not in self.payments:
+            raise mp.MercadoPagoError("404: not found", 404)
         return self.payments[payment_id]
 
     async def search_by_reference(self, reference):
@@ -187,6 +189,13 @@ async def test_webhook_confere_assinatura_e_valor(client, db, admin_h, fake_mp, 
     payment = await db.get(Payment, uuid.UUID(checkout["payment_id"]))
     await db.refresh(payment)
     assert payment.status == "refunded"
+
+    # pagamento que não existe na conta (botão "Simular notificação"): responde 200 e ignora
+    resp = await client.post(
+        "/api/v1/payments/webhook/mercadopago?type=payment&data.id=123456",
+        headers=signed("123456"),
+    )
+    assert resp.status_code == 200
 
     # avisos de outros tipos são ignorados
     resp = await client.post("/api/v1/payments/webhook/mercadopago?type=merchant_order&data.id=1")

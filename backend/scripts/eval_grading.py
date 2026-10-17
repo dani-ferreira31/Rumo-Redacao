@@ -110,6 +110,33 @@ def load_essay_br(root: Path) -> list[Sample]:
 # ---- execução -------------------------------------------------------------------
 
 
+class Pacer:
+    """Espaça as chamadas para não passar de `rpm` por minuto (cota do plano gratuito)."""
+
+    def __init__(self, rpm: int | None):
+        self.interval = 60.0 / rpm if rpm else 0.0
+        self.next_at = 0.0
+        self.lock = asyncio.Lock()
+
+    async def wait(self) -> None:
+        if not self.interval:
+            return
+        async with self.lock:
+            now = time.monotonic()
+            delay = max(0.0, self.next_at - now)
+            self.next_at = max(now, self.next_at) + self.interval
+        if delay:
+            await asyncio.sleep(delay)
+
+
+PACER = Pacer(None)
+
+
+async def _grade(data: GradingInput, config: TaskConfig):
+    await PACER.wait()
+    return await grade_once(data, config=config, user_id=None, essay_id=None)
+
+
 async def predict(sample: Sample, sem: asyncio.Semaphore, config: TaskConfig) -> Prediction:
     async with sem:
         checks = run_checks(sample.text, EssayInputType.text, sample.motivating)
@@ -118,15 +145,11 @@ async def predict(sample: Sample, sem: asyncio.Semaphore, config: TaskConfig) ->
         data = GradingInput(sample.theme, sample.motivating, sample.text, checks)
         cost = Decimal(0)
         try:
-            results = list(
-                await asyncio.gather(
-                    *(grade_once(data, config=config, user_id=None, essay_id=None) for _ in "ab")
-                )
-            )
+            results = list(await asyncio.gather(*(_grade(data, config) for _ in "ab")))
             runs = [normalize_run(i, r.output) for i, r in enumerate(results, start=1)]
             third = is_discrepant(runs[0], runs[1])
             if third:
-                r3 = await grade_once(data, config=config, user_id=None, essay_id=None)
+                r3 = await _grade(data, config)
                 results.append(r3)
                 runs.append(normalize_run(3, r3.output))
             async with SessionLocal() as session:
@@ -311,6 +334,11 @@ async def main() -> None:
     parser.add_argument("--n", type=int, default=200, help="quantas redações sortear")
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--concurrency", type=int, default=4)
+    parser.add_argument(
+        "--rpm",
+        type=int,
+        help="máximo de chamadas por minuto (ex.: 10 no plano gratuito do Gemini, que permite 15)",
+    )
     parser.add_argument("--out", default="reports")
     parser.add_argument("--yes", action="store_true", help="confirma o gasto com a API real")
     parser.add_argument("--provider", choices=["anthropic", "openai", "google", "fake"])
@@ -338,6 +366,8 @@ async def main() -> None:
     samples = load_essay_br(Path(args.dataset))
     chosen = random.Random(args.seed).sample(samples, min(args.n, len(samples)))
     sem = asyncio.Semaphore(args.concurrency)
+    global PACER
+    PACER = Pacer(args.rpm)
     started = time.monotonic()
     preds: list[Prediction] = []
     for done, coro in enumerate(

@@ -11,6 +11,7 @@ from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 
 import app.models  # noqa: F401  (registra todas as tabelas no SQLAlchemy)
+from app.core import applog
 from app.core.config import get_settings
 from app.core.db import SessionLocal, engine
 from app.core.logging import configure_logging
@@ -60,7 +61,23 @@ async def _renewal_reminders() -> None:
         await send_renewal_reminders(session)
 
 
+async def _flush_logs() -> None:
+    if applog.pending():
+        async with SessionLocal() as session:
+            await applog.flush_logs(session)
+
+
+async def _purge_logs() -> None:
+    from app.modules.system.settings import get_setting
+
+    async with SessionLocal() as session:
+        days = int((await get_setting(session, "logs"))["retention_days"])
+        await applog.purge_old_logs(session, days)
+
+
 PERIODIC_TASKS: list[PeriodicTask] = [
+    PeriodicTask("flush_logs", 5, _flush_logs),
+    PeriodicTask("purge_logs", 6 * 3600, _purge_logs),
     PeriodicTask("heartbeat", 30, _heartbeat),
     PeriodicTask("recover_stuck", 60, _recover_stuck),
     PeriodicTask("study_reminders", 60, _study_reminders),
@@ -101,6 +118,7 @@ async def run_worker(stop: asyncio.Event) -> None:
 
 async def main() -> None:
     configure_logging(get_settings().log_level)
+    applog.install("worker")
     stop = asyncio.Event()
     loop = asyncio.get_running_loop()
     for sig in (signal.SIGINT, signal.SIGTERM):
@@ -108,6 +126,7 @@ async def main() -> None:
     try:
         await run_worker(stop)
     finally:
+        await _flush_logs()
         await engine.dispose()
 
 

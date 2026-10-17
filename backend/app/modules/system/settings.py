@@ -55,6 +55,8 @@ DEFAULTS: dict[str, Any] = {
         "period_days": 35,
         "donations_enabled": True,
     },
+    # Admin → Logs: avisos e erros são apagados depois deste prazo (LGPD: retenção mínima)
+    "logs": {"retention_days": 30},
     "worker_heartbeat": None,
 }
 

@@ -33,7 +33,10 @@ class JsonFormatter(logging.Formatter):
             data.update(extra)
         if record.exc_info:
             data["exc"] = self.formatException(record.exc_info)
-        return json.dumps(data, ensure_ascii=False, default=str)
+        # LGPD: a saída dos containers também não leva e-mail, token, senha etc.
+        from app.core.applog import MAX_TRACE, scrub
+
+        return json.dumps(scrub(data, limit=MAX_TRACE), ensure_ascii=False, default=str)
 
 
 def configure_logging(level: str = "INFO") -> None:

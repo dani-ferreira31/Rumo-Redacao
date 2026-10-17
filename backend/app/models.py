@@ -36,7 +36,7 @@ from app.modules.questions.models import (
     Subject,
     Topic,
 )
-from app.modules.system.models import AppSetting, SystemEvent
+from app.modules.system.models import AppLog, AppSetting, SystemEvent
 from app.modules.users.models import User
 
 metadata = Base.metadata
@@ -44,6 +44,7 @@ metadata = Base.metadata
 __all__ = [
     "AICredential",
     "AIUsage",
+    "AppLog",
     "AppSetting",
     "Assessment",
     "AssessmentAnswer",

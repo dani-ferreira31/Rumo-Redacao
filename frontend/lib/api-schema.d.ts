@@ -1654,6 +1654,64 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/logs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Logs
+         * @description Avisos e erros da API e do worker, já sem dados pessoais.
+         */
+        get: operations["list_logs_api_v1_admin_logs_get"];
+        put?: never;
+        post?: never;
+        /** Clear Logs */
+        delete: operations["clear_logs_api_v1_admin_logs_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/logs/{log_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Log */
+        get: operations["get_log_api_v1_admin_logs__log_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/logs/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Put Log Settings
+         * @description Prazo de retenção: registros mais antigos são apagados na hora e depois todo dia.
+         */
+        put: operations["put_log_settings_api_v1_admin_logs_settings_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -3036,6 +3094,80 @@ export interface components {
             /** Ai Budget Usd */
             ai_budget_usd?: number | null;
         };
+        /** LogDetail */
+        LogDetail: {
+            /** Id */
+            id: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Level */
+            level: string;
+            /** Source */
+            source: string;
+            /** Logger */
+            logger: string;
+            /** Event */
+            event: string;
+            /** Error */
+            error: string | null;
+            /** Path */
+            path: string | null;
+            /** Request Id */
+            request_id: string | null;
+            /** Has Traceback */
+            has_traceback: boolean;
+            /** Traceback */
+            traceback: string | null;
+            /** Details */
+            details: {
+                [key: string]: unknown;
+            };
+        };
+        /** LogItem */
+        LogItem: {
+            /** Id */
+            id: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Level */
+            level: string;
+            /** Source */
+            source: string;
+            /** Logger */
+            logger: string;
+            /** Event */
+            event: string;
+            /** Error */
+            error: string | null;
+            /** Path */
+            path: string | null;
+            /** Request Id */
+            request_id: string | null;
+            /** Has Traceback */
+            has_traceback: boolean;
+        };
+        /** LogSettings */
+        LogSettings: {
+            /** Retention Days */
+            retention_days: number;
+        };
+        /** LogSummary */
+        LogSummary: {
+            /** Errors 24H */
+            errors_24h: number;
+            /** Warnings 24H */
+            warnings_24h: number;
+            /** Errors 7D */
+            errors_7d: number;
+            /** Top 24H */
+            top_24h: components["schemas"]["TopError"][];
+        };
         /** LoginIn */
         LoginIn: {
             /**
@@ -3045,6 +3177,16 @@ export interface components {
             email: string;
             /** Password */
             password: string;
+        };
+        /** LogsOut */
+        LogsOut: {
+            /** Items */
+            items: components["schemas"]["LogItem"][];
+            /** Next Before Id */
+            next_before_id: number | null;
+            summary: components["schemas"]["LogSummary"];
+            /** Retention Days */
+            retention_days: number;
         };
         /** Meter */
         Meter: {
@@ -3930,6 +4072,20 @@ export interface components {
             token_type: string;
             /** Expires In */
             expires_in: number;
+        };
+        /** TopError */
+        TopError: {
+            /** Event */
+            event: string;
+            /** Error */
+            error: string | null;
+            /** Count */
+            count: number;
+            /**
+             * Last At
+             * Format: date-time
+             */
+            last_at: string;
         };
         /** TopicOut */
         TopicOut: {
@@ -7329,6 +7485,123 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["QuotasOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_logs_api_v1_admin_logs_get: {
+        parameters: {
+            query?: {
+                level?: ("WARNING" | "ERROR") | null;
+                source?: ("api" | "worker") | null;
+                q?: string | null;
+                before_id?: number | null;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LogsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    clear_logs_api_v1_admin_logs_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    get_log_api_v1_admin_logs__log_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                log_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LogDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    put_log_settings_api_v1_admin_logs_settings_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LogSettings"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LogSettings"];
                 };
             };
             /** @description Validation Error */

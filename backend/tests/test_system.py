@@ -475,6 +475,7 @@ async def test_nenhuma_rota_admin_devolve_dados_de_aluno(client, db, admin_h, st
         "/api/v1/admin/ai/calibrations",
         "/api/v1/admin/ai/quotas",
         "/api/v1/admin/invites",
+        "/api/v1/admin/logs",
     ]
     forbidden = [STUDENT_EMAIL, STUDENT_NAME, str(student.id), "Linha 1 da redação"]
     for path in paths:

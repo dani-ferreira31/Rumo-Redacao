@@ -8,7 +8,7 @@ from app.core.db import get_session
 from app.core.deps import require_admin
 from app.core.enums import JobStatus
 from app.core.errors import AppError
-from app.modules.system import ai_admin, quota, service
+from app.modules.system import ai_admin, logs, quota, service
 from app.modules.system.models import SystemEvent
 from app.modules.system.schemas import (
     CostReport,
@@ -230,6 +230,42 @@ async def ai_set_quotas(
 ):
     await quota.set_rules(session, user, data)
     return await quota.report(session)
+
+
+# ---- logs ------------------------------------------------------------------------
+
+
+@admin.get("/logs", response_model=logs.LogsOut)
+async def list_logs(
+    level: logs.LevelFilter | None = Query(default=None),
+    source: logs.SourceFilter | None = Query(default=None),
+    q: str | None = Query(default=None, max_length=200),
+    before_id: int | None = Query(default=None, ge=1),
+    limit: int = Query(default=50, ge=1, le=200),
+    session: AsyncSession = Depends(get_session),
+):
+    """Avisos e erros da API e do worker, já sem dados pessoais."""
+    return await logs.list_logs(session, level, source, q, before_id, limit)
+
+
+@admin.get("/logs/{log_id}", response_model=logs.LogDetail)
+async def get_log(log_id: int, session: AsyncSession = Depends(get_session)):
+    return await logs.get_log(session, log_id)
+
+
+@admin.put("/logs/settings", response_model=logs.LogSettings)
+async def put_log_settings(
+    data: logs.LogSettings,
+    user: User = Depends(require_admin),
+    session: AsyncSession = Depends(get_session),
+):
+    """Prazo de retenção: registros mais antigos são apagados na hora e depois todo dia."""
+    return await logs.set_retention(session, user, data)
+
+
+@admin.delete("/logs", status_code=status.HTTP_204_NO_CONTENT)
+async def clear_logs(session: AsyncSession = Depends(get_session)):
+    await logs.clear_logs(session)
 
 
 router.include_router(admin)

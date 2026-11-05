@@ -1,6 +1,37 @@
 # Rumo1000
 
-Plataforma de estudos para o ENEM: correção de redações com IA, banco de questões e cronograma. A visão geral está em `CLAUDE.md` e os detalhes em `docs/`.
+Plataforma de estudos para o ENEM com correção de redações por IA, banco de questões oficiais e cronograma de estudos.
+
+> **Uso comercial proibido.** O código é público para estudo e portfólio, sob a [PolyForm Noncommercial 1.0.0](LICENSE). Para uso comercial, fale com o autor.
+
+## Funcionalidades
+
+- **Correção de redações:** o aluno envia uma foto da folha manuscrita, a IA transcreve, o aluno revisa o texto e a IA corrige nas 5 competências do ENEM (0 a 1000), com feedback detalhado.
+- **Banco de questões:** questões oficiais do ENEM de 2009 a 2023, organizadas por área, disciplina e tópico, com estatísticas de acerto e favoritos. Também tem questões de concursos públicos, importadas a partir do PDF da prova.
+- **Cronograma de estudos:** grade semanal com blocos por matéria e lembretes por e-mail que respeitam o fuso horário do aluno.
+- **Provas de professor:** montagem de provas com questões do banco.
+- **Assinatura e doações** pelo Mercado Pago.
+- **Painel admin:** provedor e modelo de IA por tarefa, orçamento de IA e módulos ativos. O painel mostra só números agregados, sem dados pessoais dos alunos.
+
+## Destaques técnicos
+
+- **Pipeline de IA com vários provedores:** Anthropic, OpenAI e Google atrás de um adaptador único, com saída estruturada (Pydantic), registro de uso e custo, e prompts versionados.
+- **Calibração da correção com notas humanas** (dataset Essay-BR), usando QWK, erro médio e matriz de confusão por competência.
+- **Fila de jobs no próprio Postgres** com `FOR UPDATE SKIP LOCKED`, sem Redis.
+- **Importador de questões** que cruza os dados abertos do enem.dev com os microdados do INEP (TRI e habilidades).
+- **Segurança:** chaves de API criptografadas no banco (Fernet), arquivos acessíveis só por URL assinada (HMAC) e um teste que garante que nenhuma rota de admin expõe dados de aluno.
+- **182 testes automatizados** (pytest), com os provedores de IA e de e-mail mockados.
+
+## Stack
+
+- **Linguagens:** Python, TypeScript, SQL
+- **Backend:** FastAPI, SQLAlchemy 2 (async), Alembic, Pydantic v2, uv
+- **Frontend:** Next.js 16, React 19, Tailwind CSS
+- **Banco:** PostgreSQL 16
+- **IA e imagem:** SDKs da Anthropic, OpenAI e Google GenAI; OpenCV, Pillow e pypdfium2
+- **Infra:** Docker Compose, Caddy e Nginx Proxy Manager em VPS, com backup diário; e-mail pelo Resend
+
+A documentação técnica completa está em `docs/`.
 
 ## Rodando em desenvolvimento
 
@@ -64,3 +95,9 @@ Para adicionar dependências Python, edite `backend/pyproject.toml` e rode `dock
 - **Hot reload:** o backend recarrega sozinho. O **worker não**: depois de mudar código de jobs, rode `docker compose restart worker`. Se uma alteração do frontend não aparecer, rode `docker compose restart frontend`.
 - **Dependências novas do frontend:** o `node_modules` do container fica num volume. Depois de `npm install`, recrie o volume com `docker compose rm -sf frontend && docker volume rm rumo1000_frontend_node_modules && docker compose up -d frontend`.
 - **Produção:** veja `deploy/README.md`.
+
+## Licença
+
+[PolyForm Noncommercial 1.0.0](LICENSE): você pode ler, estudar, modificar e usar o código para fins **não comerciais**. Qualquer uso comercial depende de autorização por escrito do autor.
+
+© 2026 Daniel Ferreira — 4B Sistemas

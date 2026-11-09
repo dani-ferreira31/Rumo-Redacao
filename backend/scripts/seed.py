@@ -22,6 +22,8 @@ from app.modules.users.models import User
 # Temas da aplicação regular do ENEM (título + ano). Textos motivadores são
 # opcionais e podem ser cadastrados depois pelo admin.
 OFFICIAL_THEMES = [
+    (2026, "A valorização do Sistema Único de Saúde (SUS) como direito universal"),
+    (2025, "Perspectivas acerca do envelhecimento na sociedade brasileira"),
     (2024, "Desafios para a valorização da herança africana no Brasil"),
     (
         2023,

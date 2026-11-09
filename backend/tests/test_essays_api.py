@@ -68,7 +68,10 @@ async def _get(client, token, essay_id):
 async def test_temas_oficiais(client, user_token, theme):
     resp = await client.get("/api/v1/essay-themes", headers=auth(user_token))
     assert resp.status_code == 200
-    assert resp.json()[0]["title"].startswith("Desafios")
+    titles = [t["title"] for t in resp.json()]
+    assert theme.title in titles
+    # o mais recente vem primeiro: 2026, da migration 0007
+    assert titles[0].startswith("A valorização do Sistema Único de Saúde")
 
 
 async def test_email_nao_verificado_nao_envia(client):

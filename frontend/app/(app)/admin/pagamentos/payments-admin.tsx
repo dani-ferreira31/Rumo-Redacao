@@ -8,6 +8,8 @@ import { dateTime } from "@/lib/admin";
 import { api, errorMessage } from "@/lib/api";
 import { type AdminPayments, type BillingAdmin, PAYMENT_KIND, PAYMENT_STATUS, brl } from "@/lib/payments";
 
+import { WelcomeMessage } from "./welcome-message";
+
 export function PaymentsAdmin() {
   const [settings, setSettings] = useState<BillingAdmin | null>(null);
   const [report, setReport] = useState<AdminPayments | null>(null);
@@ -117,6 +119,8 @@ export function PaymentsAdmin() {
           </div>
         )}
       </Section>
+
+      <WelcomeMessage />
 
       {!report ? (
         <Spinner />

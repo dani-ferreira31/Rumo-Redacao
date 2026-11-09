@@ -3,8 +3,9 @@
 import { useCallback, useEffect, useState } from "react";
 
 import { AdminHeader, EmptyState, Section, StatusBadge } from "@/components/admin/kit";
+import { MessageFields } from "@/components/admin/message-fields";
 import { Alert, Button, Spinner } from "@/components/ui";
-import { type AdminUser, ROLE_LABEL, dateTime } from "@/lib/admin";
+import { type AdminUser, type MessageBody, ROLE_LABEL, dateTime } from "@/lib/admin";
 import { api, errorMessage } from "@/lib/api";
 
 const selectCls = "rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm text-slate-900 shadow-sm";
@@ -19,6 +20,36 @@ export function UsersAdmin() {
   const [role, setRole] = useState<Role | "">("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
+  const [writing, setWriting] = useState<string | null>(null);
+  const [draft, setDraft] = useState<MessageBody>({ subject: "", body: "" });
+  const [template, setTemplate] = useState<MessageBody>({ subject: "", body: "" });
+  const [sent, setSent] = useState<string | null>(null);
+
+  useEffect(() => {
+    api.GET("/api/v1/admin/messages/welcome").then(({ data }) => {
+      if (data) setTemplate({ subject: data.subject, body: data.body });
+    });
+  }, []);
+
+  function openMessage(user: AdminUser) {
+    setSent(null);
+    setError(null);
+    setDraft(template);
+    setWriting(writing === user.id ? null : user.id);
+  }
+
+  async function sendMessage(user: AdminUser) {
+    setBusy(user.id);
+    setError(null);
+    const { error: e } = await api.POST("/api/v1/admin/users/{user_id}/message", {
+      params: { path: { user_id: user.id } },
+      body: draft,
+    });
+    setBusy(null);
+    if (e) return setError(errorMessage(e));
+    setWriting(null);
+    setSent(`Mensagem enviada para ${user.name}.`);
+  }
 
   const query = useCallback(
     (next?: string | null) => ({
@@ -76,6 +107,7 @@ export function UsersAdmin() {
         description="Contas da plataforma. Aqui você troca o tipo de conta e desativa quem não deve mais entrar. Redações e respostas dos alunos não aparecem no painel."
       />
       {error ? <Alert>{error}</Alert> : null}
+      {sent ? <Alert kind="success">{sent}</Alert> : null}
 
       <Section>
         <form
@@ -158,6 +190,11 @@ export function UsersAdmin() {
                           Acesso livre
                         </label>
                       ) : null}
+                      {!u.disabled_at ? (
+                        <Button variant="secondary" disabled={busy === u.id} onClick={() => openMessage(u)}>
+                          Mensagem
+                        </Button>
+                      ) : null}
                       <Button
                         variant={u.disabled_at ? "secondary" : "ghost"}
                         disabled={busy === u.id}
@@ -167,6 +204,34 @@ export function UsersAdmin() {
                       </Button>
                     </div>
                   )}
+                  {writing === u.id ? (
+                    <form
+                      className="w-full space-y-3 rounded-lg border border-slate-200 bg-slate-50 p-4"
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        void sendMessage(u);
+                      }}
+                    >
+                      <p className="text-sm text-slate-700">
+                        E-mail para <strong>{u.name}</strong> ({u.email})
+                      </p>
+                      <MessageFields
+                        subject={draft.subject}
+                        body={draft.body}
+                        rows={7}
+                        onSubject={(v) => setDraft({ ...draft, subject: v })}
+                        onBody={(v) => setDraft({ ...draft, body: v })}
+                      />
+                      <div className="flex gap-2">
+                        <Button type="submit" disabled={busy === u.id || !draft.subject.trim() || !draft.body.trim()}>
+                          {busy === u.id ? "Enviando..." : "Enviar e-mail"}
+                        </Button>
+                        <Button type="button" variant="ghost" onClick={() => setWriting(null)}>
+                          Cancelar
+                        </Button>
+                      </div>
+                    </form>
+                  ) : null}
                 </li>
               ))}
             </ul>

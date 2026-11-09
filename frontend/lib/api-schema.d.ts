@@ -985,6 +985,67 @@ export interface paths {
         patch: operations["update_user_api_v1_admin_users__user_id__patch"];
         trace?: never;
     };
+    "/api/v1/admin/messages/welcome": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Welcome
+         * @description Texto da boas-vindas automática (sem dados de alunos).
+         */
+        get: operations["get_welcome_api_v1_admin_messages_welcome_get"];
+        /** Put Welcome */
+        put: operations["put_welcome_api_v1_admin_messages_welcome_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/messages/welcome/test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Test Welcome
+         * @description Envia o texto para o e-mail do próprio admin.
+         */
+        post: operations["test_welcome_api_v1_admin_messages_welcome_test_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/users/{user_id}/message": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Message User
+         * @description Mensagem personalizada por e-mail para uma conta (escolhida em Admin → Usuários).
+         */
+        post: operations["message_user_api_v1_admin_users__user_id__message_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/contests/filters": {
         parameters: {
             query?: never;
@@ -3188,6 +3249,24 @@ export interface components {
             /** Retention Days */
             retention_days: number;
         };
+        /** MessageIn */
+        MessageIn: {
+            /** Subject */
+            subject: string;
+            /**
+             * Body
+             * @description Texto do e-mail. {nome} vira o primeiro nome.
+             */
+            body: string;
+        };
+        /** MessageQueued */
+        MessageQueued: {
+            /**
+             * Queued
+             * @default true
+             */
+            queued: boolean;
+        };
         /** Meter */
         Meter: {
             /** Used */
@@ -4210,6 +4289,27 @@ export interface components {
             week: string;
             /** Count */
             count: number;
+        };
+        /** WelcomeSettings */
+        WelcomeSettings: {
+            /** Subject */
+            subject: string;
+            /**
+             * Body
+             * @description Texto do e-mail. {nome} vira o primeiro nome.
+             */
+            body: string;
+            /**
+             * Enabled
+             * @default false
+             */
+            enabled: boolean;
+            /**
+             * Delay Minutes
+             * @description Espera depois do 'pagamento confirmado'.
+             * @default 5
+             */
+            delay_minutes: number;
         };
     };
     responses: never;
@@ -6128,6 +6228,127 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminUserOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_welcome_api_v1_admin_messages_welcome_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WelcomeSettings"];
+                };
+            };
+        };
+    };
+    put_welcome_api_v1_admin_messages_welcome_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WelcomeSettings"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WelcomeSettings"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    test_welcome_api_v1_admin_messages_welcome_test_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MessageIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageQueued"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    message_user_api_v1_admin_users__user_id__message_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                user_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MessageIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageQueued"];
                 };
             };
             /** @description Validation Error */

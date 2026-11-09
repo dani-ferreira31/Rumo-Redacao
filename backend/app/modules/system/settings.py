@@ -55,6 +55,22 @@ DEFAULTS: dict[str, Any] = {
         "period_days": 35,
         "donations_enabled": True,
     },
+    # Mensagem de boas-vindas (Admin → Pagamentos): enviada por e-mail na primeira
+    # assinatura aprovada, alguns minutos depois do "pagamento confirmado".
+    # {nome} vira o primeiro nome do aluno.
+    "welcome": {
+        "enabled": False,
+        "subject": "Boas-vindas ao Rumo1000!",
+        "body": (
+            "Olá, {nome}!\n\n"
+            "Que bom ter você no Rumo1000. Agora você pode enviar a foto da sua redação e "
+            "receber a correção nas 5 competências do ENEM, treinar no banco de questões e "
+            "montar o seu cronograma de estudos.\n\n"
+            "Qualquer dúvida, é só responder este e-mail.\n\n"
+            "Bons estudos!"
+        ),
+        "delay_minutes": 5,
+    },
     # Admin → Logs: avisos e erros são apagados depois deste prazo (LGPD: retenção mínima)
     "logs": {"retention_days": 30},
     "worker_heartbeat": None,

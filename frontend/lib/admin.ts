@@ -100,6 +100,8 @@ export const CONTEST_STATUS: Record<string, { label: string; level: "ok" | "warn
 
 export type Invite = S["InviteOut"];
 export type AdminUser = S["AdminUserOut"];
+export type WelcomeSettings = S["WelcomeSettings"];
+export type MessageBody = S["MessageIn"];
 export type QuotaUsage = S["QuotaUsage"];
 export type QuotaRule = S["QuotaRule"];
 

@@ -21,6 +21,7 @@ from app.core.enums import PaymentKind, PaymentStatus, UserRole
 from app.core.errors import AppError, NotFoundError
 from app.core.security import utcnow
 from app.email.service import queue_email
+from app.modules.messages.service import queue_welcome_after_payment
 from app.modules.payments import mercadopago as mp
 from app.modules.payments.access import access_ok, billing
 from app.modules.payments.models import Payment
@@ -218,6 +219,7 @@ async def _apply(session: AsyncSession, payment: Payment, info: mp.MPPayment) ->
                 user_id=user.id,
                 dedupe_key=f"payment:{payment.id}",
             )
+            await queue_welcome_after_payment(session, user)
         elif user:
             log_event(session, "payment", f"Doação recebida: R$ {_brl(payment.amount)}")
             await queue_email(

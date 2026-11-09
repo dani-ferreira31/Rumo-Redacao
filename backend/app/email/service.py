@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -36,6 +37,7 @@ async def queue_email(
     context: dict[str, Any],
     user_id: uuid.UUID | None = None,
     dedupe_key: str | None = None,
+    run_after: datetime | None = None,
 ) -> int | None:
     """Registra o e-mail em `email_logs` e enfileira o envio.
 
@@ -56,5 +58,6 @@ async def queue_email(
         session,
         "email.send",
         {"email_log_id": log_id, "to": to, "subject": subject, "html": html},
+        run_after=run_after,
     )
     return log_id

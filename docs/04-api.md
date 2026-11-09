@@ -103,6 +103,9 @@ Validações dos blocos: `start_time < end_time`; minutos múltiplos de 5 (a int
 | GET | `/admin/questions?reviewed=false` | fila de revisão |
 | POST/PATCH | `/admin/essay-themes` | gerenciar temas |
 | GET | `/admin/ai-usage` | custo por dia/propósito |
+| GET/PUT | `/admin/messages/welcome` | boas-vindas automática por e-mail após a 1ª assinatura aprovada (texto com `{nome}`, liga/desliga, atraso em minutos) |
+| POST | `/admin/messages/welcome/test` | envia o texto para o e-mail do próprio admin |
+| POST | `/admin/users/{id}/message` | mensagem personalizada por e-mail para uma conta (escolhida em Admin → Usuários); responde só `{"queued": true}` |
 
 ## Saúde
 `GET /health`: público. `{db: "ok", storage: "ok"}`.

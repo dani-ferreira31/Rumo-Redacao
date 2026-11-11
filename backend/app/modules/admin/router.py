@@ -202,3 +202,13 @@ async def update_user(
 ):
     """Troca o papel (aluno ou professor) ou desativa/reativa a conta."""
     return AdminUserOut.model_validate(await users.admin_update_user(session, admin, user_id, data))
+
+
+@router.delete("/users/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_user(
+    user_id: uuid.UUID,
+    admin: User = Depends(require_admin),
+    session: AsyncSession = Depends(get_session),
+):
+    """Exclui a conta de vez, com os dados do aluno (redações, respostas, cronograma)."""
+    await users.admin_delete_user(session, admin, user_id)

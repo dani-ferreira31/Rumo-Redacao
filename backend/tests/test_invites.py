@@ -172,3 +172,31 @@ async def test_admin_promove_aluno_a_professor_mas_nao_mexe_em_admin(client, db,
         f"/api/v1/admin/users/{user.id}", headers=admin_h, json={"role": "admin"}
     )
     assert resp.status_code == 422
+
+
+async def test_admin_exclui_conta_de_teste_mas_nao_admin(client, db, admin_h):
+    tokens = await register(client, email="teste-apagar@example.com")
+    h = auth(tokens["access_token"])
+    user = await db.scalar(select(User).where(User.email == "teste-apagar@example.com"))
+    user_id = user.id
+
+    # aluno comum não pode excluir ninguém
+    assert (await client.delete(f"/api/v1/admin/users/{user_id}", headers=h)).status_code == 403
+
+    resp = await client.delete(f"/api/v1/admin/users/{user_id}", headers=admin_h)
+    assert resp.status_code == 204
+    db.expire_all()
+    assert await db.get(User, user_id) is None
+    assert (await client.get("/api/v1/me", headers=h)).status_code == 401
+    # a senha antiga não entra mais
+    login = await client.post(
+        "/api/v1/auth/login", json={"email": "teste-apagar@example.com", "password": PASSWORD}
+    )
+    assert login.status_code == 401
+
+    resp = await client.delete(f"/api/v1/admin/users/{user_id}", headers=admin_h)
+    assert resp.status_code == 404
+
+    admin = await db.scalar(select(User).where(User.email == "admin@example.com"))
+    resp = await client.delete(f"/api/v1/admin/users/{admin.id}", headers=admin_h)
+    assert resp.status_code == 409

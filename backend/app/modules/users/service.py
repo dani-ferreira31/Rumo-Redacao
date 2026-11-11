@@ -109,3 +109,16 @@ async def admin_update_user(
     await session.commit()
     await session.refresh(user)
     return user
+
+
+async def admin_delete_user(session: AsyncSession, admin: User, user_id: uuid.UUID) -> None:
+    """Exclui a conta de vez (ex.: contas de teste). Pagamentos ficam no histórico, sem dono."""
+    user = await session.get(User, user_id)
+    if user is None:
+        raise NotFoundError("Usuário não encontrado.")
+    if user.id == admin.id or user.role == UserRole.admin:
+        raise AppError(
+            "cannot_change_admin", "Contas de administrador não podem ser excluídas aqui.", 409
+        )
+    log_event(session, "user", f"Conta de {ROLE_LABEL[user.role]} excluída pelo admin")
+    await delete_account(session, user)

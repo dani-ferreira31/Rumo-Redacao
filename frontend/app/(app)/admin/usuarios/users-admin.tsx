@@ -100,11 +100,34 @@ export function UsersAdmin() {
     else setError(errorMessage(e));
   }
 
+  async function remove(user: AdminUser) {
+    const paid = user.paid_until && new Date(user.paid_until) > new Date();
+    const warning = paid ? "\n\nAtenção: esta conta tem assinatura em dia." : "";
+    if (
+      !window.confirm(
+        `Excluir de vez a conta de ${user.name} (${user.email})?\n\nRedações, respostas e cronograma da pessoa serão apagados e não há como desfazer. Os pagamentos continuam no histórico.${warning}`,
+      )
+    ) {
+      return;
+    }
+    setBusy(user.id);
+    setError(null);
+    setSent(null);
+    const { error: e } = await api.DELETE("/api/v1/admin/users/{user_id}", {
+      params: { path: { user_id: user.id } },
+    });
+    setBusy(null);
+    if (e) return setError(errorMessage(e));
+    setItems((prev) => prev?.filter((u) => u.id !== user.id) ?? prev);
+    setTotal((t) => t - 1);
+    setSent(`Conta de ${user.name} excluída.`);
+  }
+
   return (
     <div className="max-w-5xl space-y-6">
       <AdminHeader
         title="Usuários"
-        description="Contas da plataforma. Aqui você troca o tipo de conta e desativa quem não deve mais entrar. Redações e respostas dos alunos não aparecem no painel."
+        description="Contas da plataforma. Aqui você troca o tipo de conta, desativa quem não deve mais entrar e exclui contas de teste. Redações e respostas dos alunos não aparecem no painel."
       />
       {error ? <Alert>{error}</Alert> : null}
       {sent ? <Alert kind="success">{sent}</Alert> : null}
@@ -201,6 +224,14 @@ export function UsersAdmin() {
                         onClick={() => void patch(u, { disabled: !u.disabled_at })}
                       >
                         {u.disabled_at ? "Reativar" : "Desativar"}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        className="text-red-600 hover:bg-red-50 hover:text-red-700"
+                        disabled={busy === u.id}
+                        onClick={() => void remove(u)}
+                      >
+                        Excluir
                       </Button>
                     </div>
                   )}
